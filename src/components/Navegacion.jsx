@@ -2,7 +2,7 @@ import {Container , Nav, Navbar} from "react-bootstrap"
 
 function Navegacion(){
     return(    
-    <Navbar expand="md" bg="light" data-bs-theme="dark">
+    <Navbar expand="md" bg="light" data-bs-theme="light">
         <Container>
             <Navbar.Brand href="#inicio">Gas El Volcan</Navbar.Brand>
             <Navbar.Toggle aria-controls="menu-principal" />
