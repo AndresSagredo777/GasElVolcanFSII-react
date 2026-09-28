@@ -1,4 +1,5 @@
 import {Container , Nav, Navbar} from "react-bootstrap"
+import Productos from "../pages/Productos";
 
 function Navegacion(){
     return(    
