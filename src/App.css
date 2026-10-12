@@ -1,4 +1,3 @@
-/* Plantilla Base */
 * {
     margin: 0;
     padding: 0;
@@ -19,7 +18,11 @@ body {
     color: var(--color-texto);
     background-color: var(--color-fondo);
     line-height: 1.6;
-    /* Ajustes para fijar el footer al fondo */
+    margin: 0;
+    padding: 0;
+}
+
+#root {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -29,16 +32,7 @@ main {
     flex: 1;
 }
 
-.texto-oculto {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-}
-
-/* Utilidad para accesibilidad */
+.texto-oculto,
 .sr-only {
     position: absolute;
     width: 1px;
@@ -48,11 +42,8 @@ main {
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     border: 0;
+    white-space: nowrap;
 }
-
-/* ============================================================
-   Configuración para CELULAR (Mobile First)
-============================================================ */
 
 .salto-contenido {
     position: absolute;
@@ -79,7 +70,6 @@ main {
     position: sticky;
     top: 0;
     z-index: 10;
-    position: relative;
 }
 
 .marca {
@@ -150,7 +140,8 @@ main {
 }
 
 .menu a:hover,
-.menu a[aria-current="page"] {
+.menu a[aria-current="page"],
+.menu a.active {
     color: var(--color-primario);
     border-bottom-color: var(--color-primario);
 }
@@ -173,6 +164,7 @@ main {
 .presentacion h1 {
     font-size: 1.6rem;      
     margin-bottom: 0.8rem;
+    color: var(--color-blanco);
 }
 
 .presentacion p {
@@ -180,6 +172,45 @@ main {
     margin: 0 auto 1.5rem auto;
     color: #dbe4ee;
     font-size: 0.95rem;
+}
+
+.boton {
+    display: inline-block;
+    background-color: var(--color-primario);
+    color: var(--color-blanco);
+    text-decoration: none;
+    padding: 0.8rem 1.6rem;
+    border-radius: 6px;
+    font-weight: bold;
+    width: 100%;             
+    max-width: 280px;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.boton:hover {
+    background-color: var(--color-primario-oscuro);
+}
+
+.contenedor-principal {
+    max-width: 1100px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+.contenedor-principal > h1 {
+    text-align: center;
+    color: var(--color-secundario);
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.contenedor-principal > p {
+    text-align: center;
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
 }
 
 .grilla-valores {
@@ -210,25 +241,6 @@ main {
     color: #555;
 }
 
-.boton {
-    display: inline-block;
-    background-color: var(--color-primario);
-    color: var(--color-blanco);
-    text-decoration: none;
-    padding: 0.8rem 1.6rem;
-    border-radius: 6px;
-    font-weight: bold;
-    width: 100%;             
-    max-width: 280px;
-    transition: background-color 0.2s ease;
-}
-
-.boton:hover {
-    background-color: var(--color-primario-oscuro);
-}
-
-/* Secciones de Productos e Inicio */
-
 section[aria-labelledby="titulo-productos"] {
     padding: 0 1rem;
     margin: 2.5rem auto;
@@ -239,26 +251,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     color: var(--color-secundario);
     font-size: 1.3rem;
     margin-bottom: 1.5rem;
-}
-
-.contenedor-principal {
-    max-width: 1100px;
-    margin: 2.5rem auto;
-    padding: 0 1rem;
-}
-
-.contenedor-principal > h1 {
-    text-align: center;
-    color: var(--color-secundario);
-    font-size: 1.6rem;
-    margin-bottom: 0.5rem;
-}
-
-.contenedor-principal > p {
-    text-align: center;
-    color: #555;
-    max-width: 700px;
-    margin: 0 auto 2rem auto;
 }
 
 .categoria-productos {
@@ -272,8 +264,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     padding-bottom: 0.4rem;
     border-bottom: 2px solid var(--color-primario);
 }
-
-/* Grilla de Tarjetas */
 
 .grilla-tarjetas,
 .grilla-productos {
@@ -333,10 +323,12 @@ section[aria-labelledby="titulo-productos"] h2 {
     font-weight: bold;
     color: var(--color-primario-oscuro);
     margin-top: 0.5rem;
+    padding: 0 0.9rem;
 }
 
 .tarjeta a,
-.Producto button {
+.Producto button,
+.boton-añadir {
     display: block;
     margin: 0.8rem 0.9rem 1rem 0.9rem;
     padding: 0.6rem;
@@ -354,14 +346,11 @@ section[aria-labelledby="titulo-productos"] h2 {
 }
 
 .tarjeta a:hover,
-.Producto button:hover {
+.Producto button:hover,
+.boton-añadir:hover {
     background-color: var(--color-primario-oscuro);
     text-decoration: none;
 }
-
-/* =========================================
-   ESTILOS DEL CARRITO DE COMPRAS (MÓVIL)
-   ========================================= */
 
 .disposicion-carrito {
     display: flex;
@@ -449,8 +438,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     background-color: #fff5f5;
 }
 
-/* Panel de Resumen */
-
 .resumen-compra {
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -515,11 +502,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     text-decoration: underline;
 }
 
-/* =========================================
-   ESTILOS DEL MODAL DE PAGO
-   ========================================= */
-
-/* Modal Unificado de Pago y Envío */
 .modal-pago {
     border: none;
     border-radius: 10px;
@@ -637,8 +619,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     background-color: #cbd5e1;
 }
 
-/* Avisos y Pie de página */
-
 .aviso {
     margin: 1.5rem 1rem 2.5rem 1rem;
     padding: 1.2rem 1.5rem;
@@ -663,6 +643,8 @@ section[aria-labelledby="titulo-productos"] h2 {
     text-align: center;
     padding: 1.5rem 1rem;
     font-size: 0.9rem;
+    margin-top: auto;
+    width: 100%;
 }
 
 .pie-sitio a {
@@ -676,7 +658,7 @@ section[aria-labelledby="titulo-productos"] h2 {
     padding: 0 1rem;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.8;
+    gap: 0.8rem;
 }
 
 .lista-cobertura li {
@@ -687,10 +669,6 @@ section[aria-labelledby="titulo-productos"] h2 {
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
-
-/* ============================================================
-   Configuración para TABLET
-============================================================ */
 
 @media (min-width: 600px) {
     .cabecera-sitio,
@@ -717,6 +695,10 @@ section[aria-labelledby="titulo-productos"] h2 {
         width: auto;
     }
 
+    .grilla-valores {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .grilla-tarjetas,
     .grilla-productos {
         grid-template-columns: repeat(2, 1fr);
@@ -729,19 +711,7 @@ section[aria-labelledby="titulo-productos"] h2 {
     }
 }
 
-/* ============================================================
-   Configuración para ESCRITORIO
-============================================================ */
-
 @media (min-width: 900px) {
-    .cabecera-sitio {
-        flex-direction: row;
-        justify-content: center;
-        gap: 2.5rem;
-        padding: 1rem 2rem;
-        text-align: left;
-    }
-
     .cabecera-sitio,
     .cabecera {
         padding: 1rem 2rem;
@@ -761,9 +731,7 @@ section[aria-labelledby="titulo-productos"] h2 {
         width: auto;
         padding-top: 0;
         font-size: 1rem;
-    }
-    .menu {
-        font-size: 1rem;
+        gap: 1.5rem;
     }
 
     .presentacion {
@@ -781,6 +749,7 @@ section[aria-labelledby="titulo-productos"] h2 {
 
     .grilla-valores {
         max-width: 1100px;
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .grilla-tarjetas,
@@ -798,7 +767,6 @@ section[aria-labelledby="titulo-productos"] h2 {
         font-size: 1.3rem;
     }
 
-    /* Carrito en Escritorio (Distribución a 2 Columnas) */
     .disposicion-carrito {
         flex-direction: row;
         align-items: flex-start;
