@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import PagPrincipal from './pages/PagPrincipal';
 import Navegacion from './components/Navegacion';
 import Nosotros from './pages/Nosotros';
@@ -9,18 +9,16 @@ import Cartelera from './pages/CarteleraProductos';
 import Error from './pages/NotFound404';
 
 function App() {
-  // 1. Estado del carrito
+  // Estado del carrito con persistencia en localStorage
   const [carrito, setCarrito] = useState(() => {
     const guardado = localStorage.getItem('carritoProductos');
     return guardado ? JSON.parse(guardado) : [];
   });
 
-  // 2. Persistencia en localStorage
   useEffect(() => {
     localStorage.setItem('carritoProductos', JSON.stringify(carrito));
   }, [carrito]);
 
-  // 3. Función para añadir al carrito
   function agregarAlCarrito(producto) {
     setCarrito((prevCarrito) => {
       const existe = prevCarrito.find((item) => item.id === producto.id);
@@ -37,7 +35,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <>
       <Navegacion />
       <Routes>
         <Route path="/" element={<PagPrincipal />} />
@@ -46,7 +44,7 @@ function App() {
         <Route path="/cobertura" element={<Cobertura />} />
         <Route path="*" element={<Error />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
