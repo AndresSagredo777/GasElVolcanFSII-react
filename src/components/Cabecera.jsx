@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-function Cabecera() {
+function Cabecera({ cantidadTotal = 0 }) {
     const [menuAbierto, setMenuAbierto] = useState(false);
 
     const toggleMenu = () => {
@@ -18,7 +18,6 @@ function Cabecera() {
                 Gas El Volcan
             </Link>
 
-            {/* Botón menú hamburguesa para versión móvil */}
             <button 
                 className={`boton-menu ${menuAbierto ? 'activo' : ''}`} 
                 onClick={toggleMenu}
@@ -29,7 +28,6 @@ function Cabecera() {
                 <span className="linea-menu"></span>
             </button>
 
-            {/* Navegación por rutas */}
             <nav>
                 <ul className={`menu ${menuAbierto ? 'menu-abierto' : ''}`}>
                     <li>
@@ -43,6 +41,11 @@ function Cabecera() {
                     </li>
                     <li>
                         <NavLink to="/cobertura" onClick={cerrarMenu}>Cobertura</NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/carrito" onClick={cerrarMenu} style={{ fontWeight: 'bold', color: 'var(--color-primario)' }}>
+                            🛒 Carrito ({cantidadTotal})
+                        </NavLink>
                     </li>
                 </ul>
             </nav>

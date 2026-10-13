@@ -1,52 +1,68 @@
-// src/pages/CarteleraProductos.jsx
-import React, { useState } from "react";
-import Productos from "../components/Productos";
-import { productos } from "../data/productos";
+import React, { useState } from 'react';
 
-function CarteleraProductos({ agregar }) {
-    const [categoria, setCategoria] = useState("Todas");
+function CarteleraProductos({ productos, agregar }) {
+  const [categoriaSel, setCategoriaSel] = useState('todas');
 
-    // Filtrado reactivo según la categoría seleccionada
-    const productosFiltrados = categoria === "Todas"
-        ? productos
-        : productos.filter((item) => item.categoria === categoria);
+  const categorias = ['todas', ...new Set(productos.map(p => p.categoria))];
 
-    return (
-        <div className="container py-4">
-            <h2 className="mb-3 fw-bold">Catálogo de Productos</h2>
+  const productosFiltrados = categoriaSel === 'todas'
+    ? productos
+    : productos.filter(p => p.categoria === categoriaSel);
 
-            {/* Selector de Filtro por Categoría */}
-            <div className="row mb-4">
-                <div className="col-12 col-md-6 col-lg-4">
-                    <label htmlFor="filtro-categoria" className="form-label fw-semibold">
-                        Filtrar por categoría:
-                    </label>
-                    <select
-                        id="filtro-categoria"
-                        className="form-select"
-                        value={categoria}
-                        onChange={(e) => setCategoria(e.target.value)}
-                    >
-                        <option value="Todas">Todas las categorías</option>
-                        <option value="Cilindros de Gas">Cilindros de Gas</option>
-                        <option value="Accesorios y Reguladores">Accesorios y Reguladores</option>
-                    </select>
-                </div>
-            </div>
+  return (
+    <main className="contenedor-principal">
+      <h1>Catálogo de Productos</h1>
+      <p>Selecciona tus productos y añádelos a tu pedido.</p>
 
-            {/* Grilla de Productos */}
-            <div className="row g-4">
-                {productosFiltrados.map((item) => (
-                    <div className="col-12 col-md-6 col-lg-4" key={item.id}>
-                        <Productos
-                            producto={item}
-                            agregar={agregar}
-                        />               
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}   
+      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '2rem' }}>
+        {categorias.map((cat) => (
+          <button 
+            key={cat}
+            onClick={() => setCategoriaSel(cat)}
+            style={{
+              padding: '0.5rem 1.2rem',
+              borderRadius: '20px',
+              border: '1px solid var(--color-secundario)',
+              backgroundColor: categoriaSel === cat ? 'var(--color-primario)' : 'white',
+              color: categoriaSel === cat ? 'white' : 'var(--color-secundario)',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {cat === 'todas' ? 'Todos los productos' : cat}
+          </button>
+        ))}
+      </div>
 
+      <div className="grilla-productos">
+        {productosFiltrados.map((prod) => {
+          const rutaImagen = prod.imagen ? `/${prod.imagen}` : prod.img;
+          return (
+            <article className="Producto" key={prod.id}>
+              <img src={rutaImagen} alt={prod.nombre} />
+              <h3>{prod.nombre}</h3>
+              <p>{prod.descripcion || prod.desc}</p>
+              
+              <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#276749' : '#e53e3e', fontWeight: 'bold' }}>
+                {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
+              </p>
+
+              <span className="precio">${prod.precio.toLocaleString('es-CL')}</span>
+              
+              <button 
+                className="boton-añadir" 
+                onClick={() => agregar(prod)}
+                disabled={prod.stock === 0}
+                style={prod.stock === 0 ? { backgroundColor: '#cbd5e1', cursor: 'not-allowed' } : {}}
+              >
+                {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </main>
+  );
+}
 export default CarteleraProductos;
