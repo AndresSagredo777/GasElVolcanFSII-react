@@ -193,7 +193,7 @@ function App() {
       />
 
       <Routes>
-        <Route path="/" element={<PagPrincipal agregar={agregarAlCarrito} />} />
+        <Route path="/" element={<PagPrincipal productos={productos} agregar={agregarAlCarrito} />} />
         <Route 
           path="/productos" 
           element={<Cartelera productos={productos} agregar={agregarAlCarrito} />} 

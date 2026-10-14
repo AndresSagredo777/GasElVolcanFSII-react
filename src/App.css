@@ -141,23 +141,164 @@ body {
   transform: scale(0.98);
 }
 
-.aviso {
-  background-color: var(--color-blanco);
-  border: 1px solid var(--color-borde);
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 600px;
-  margin: 0 auto 1.5rem auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+/* ============================================================
+   5. PÁGINA DE INICIO (HOME)
+============================================================ */
+.hero-home {
+  background: linear-gradient(135deg, var(--color-secundario) 0%, #2b4c7e 100%);
+  color: var(--color-blanco);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 8px 24px rgba(26, 54, 93, 0.15);
+  text-align: center;
 }
 
-.aviso h2 {
+.insignia-hero {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fbd38d;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+}
+
+.hero-home h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  line-height: 1.2;
+}
+
+.bajada-hero-home {
+  max-width: 650px;
+  margin: 0 auto 1.8rem auto;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+}
+
+.acciones-hero {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primario {
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+}
+
+.btn-hero-secundario {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-blanco);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-hero-secundario:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Beneficios */
+.grilla-beneficios {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.tarjeta-beneficio {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: transform 0.2s ease;
+}
+
+.tarjeta-beneficio:hover {
+  transform: translateY(-4px);
+}
+
+.icono-beneficio {
+  font-size: 2.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.tarjeta-beneficio h3 {
+  font-size: 1.1rem;
   color: var(--color-secundario);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.tarjeta-beneficio p {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Destacados */
+.seccion-destacados {
+  margin-bottom: 3rem;
+}
+
+.cabecera-seccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.cabecera-seccion h2 {
+  font-size: 1.5rem;
+  color: var(--color-secundario);
+}
+
+.link-ver-mas {
+  color: var(--color-primario);
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.link-ver-mas:hover {
+  text-decoration: underline;
+}
+
+/* Banner CTA Home */
+.banner-cta-home {
+  background-color: var(--color-secundario);
+  color: var(--color-blanco);
+  border-radius: 12px;
+  padding: 2.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.texto-cta h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.texto-cta p {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.btn-cta-solido {
+  background-color: var(--color-primario);
+  padding: 0.85rem 1.8rem;
+  white-space: nowrap;
 }
 
 /* ============================================================
-   5. CATÁLOGO DE PRODUCTOS
+   6. CATÁLOGO DE PRODUCTOS
 ============================================================ */
 .grilla-productos {
   display: grid;
@@ -226,7 +367,7 @@ body {
 }
 
 /* ============================================================
-   6. CARRITO DE COMPRAS
+   7. CARRITO DE COMPRAS
 ============================================================ */
 .disposicion-carrito {
   display: flex;
@@ -341,22 +482,8 @@ body {
   margin-top: 1rem;
 }
 
-.btn-seguir-comprando {
-  display: block;
-  text-align: center;
-  margin-top: 1rem;
-  color: #64748b;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.btn-seguir-comprando:hover {
-  color: var(--color-primario);
-}
-
 /* ============================================================
-   7. MODAL DE PAGO / CHECKOUT
+   8. MODAL DE PAGO / CHECKOUT
 ============================================================ */
 .modal-pago {
   background-color: rgba(0, 0, 0, 0.5);
@@ -436,15 +563,6 @@ body {
   font-size: 0.95rem;
 }
 
-.fila-doble {
-  display: flex;
-  gap: 0.8rem;
-}
-
-.fila-doble > div {
-  flex: 1;
-}
-
 .acciones-modal {
   display: flex;
   justify-content: flex-end;
@@ -463,7 +581,7 @@ body {
 }
 
 /* ============================================================
-   8. LOGIN Y REGISTRO
+   9. LOGIN Y REGISTRO
 ============================================================ */
 .tarjeta-login {
   max-width: 480px;
@@ -570,7 +688,7 @@ body {
 }
 
 /* ============================================================
-   9. NOSOTROS Y COBERTURA (NUEVOS ESTILOS)
+   10. NOSOTROS Y COBERTURA
 ============================================================ */
 .hero-nosotros {
   margin-bottom: 2.5rem;
@@ -602,7 +720,6 @@ body {
   color: #4a5568;
 }
 
-/* Barra de Métricas */
 .barras-metricas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -633,7 +750,6 @@ body {
   font-weight: 600;
 }
 
-/* Grilla de Pilares (Nosotros) */
 .grilla-tarjetas-nosotros {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -685,7 +801,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* Grilla de Cobertura */
 .grilla-cobertura {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -784,7 +899,7 @@ body {
 }
 
 /* ============================================================
-   10. FOOTER
+   11. FOOTER
 ============================================================ */
 footer {
   background-color: var(--color-secundario);
@@ -796,11 +911,15 @@ footer {
 }
 
 /* ============================================================
-   11. MEDIA QUERIES (RESPONSIVE)
+   12. MEDIA QUERIES (RESPONSIVE)
 ============================================================ */
 
 /* Tablet (600px en adelante) */
 @media (min-width: 600px) {
+  .grilla-beneficios {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   .grilla-productos {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -811,6 +930,12 @@ footer {
 
   .grilla-cobertura {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .banner-cta-home {
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
   }
 
   .fila-doble-login {
