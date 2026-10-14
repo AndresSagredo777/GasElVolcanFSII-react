@@ -9,23 +9,24 @@ import Nosotros from './pages/Nosotros';
 import Cobertura from './pages/Cobertura';
 import Cartelera from './pages/CarteleraProductos';
 import Carrito from './pages/Carrito';
+import Login from './pages/Login';
 import Error from './pages/NotFound404';
 
 function App() {
+
   const [productos, setProductos] = useState(() => {
     try {
       const guardado = localStorage.getItem('productosStock');
       if (guardado) {
         const parsed = JSON.parse(guardado);
-        if (parsed.length === productosIniciales.length) {
-          return parsed;
-        }
+        if (parsed.length === productosIniciales.length) return parsed;
       }
       return productosIniciales;
     } catch {
       return productosIniciales;
     }
   });
+
 
   const [carrito, setCarrito] = useState(() => {
     try {
@@ -36,6 +37,26 @@ function App() {
     }
   });
 
+
+  const [usuarios, setUsuarios] = useState(() => {
+    try {
+      const guardados = localStorage.getItem('usuariosGas');
+      return guardados ? JSON.parse(guardados) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [usuarioActual, setUsuarioActual] = useState(() => {
+    try {
+      const guardado = localStorage.getItem('usuarioActualGas');
+      return guardado ? JSON.parse(guardado) : null;
+    } catch {
+      return null;
+    }
+  });
+
+
   useEffect(() => {
     localStorage.setItem('productosStock', JSON.stringify(productos));
   }, [productos]);
@@ -44,6 +65,45 @@ function App() {
     localStorage.setItem('carritoProductos', JSON.stringify(carrito));
   }, [carrito]);
 
+  useEffect(() => {
+    localStorage.setItem('usuariosGas', JSON.stringify(usuarios));
+  }, [usuarios]);
+
+  useEffect(() => {
+    if (usuarioActual) {
+      localStorage.setItem('usuarioActualGas', JSON.stringify(usuarioActual));
+    } else {
+      localStorage.removeItem('usuarioActualGas');
+    }
+  }, [usuarioActual]);
+
+  // Funciones de Autenticación
+  function registrarUsuario(nuevoUsuario) {
+    const existe = usuarios.some(u => u.email.toLowerCase() === nuevoUsuario.email.toLowerCase());
+    if (existe) {
+      return { exito: false, mensaje: 'El correo ya se encuentra registrado.' };
+    }
+    setUsuarios((prev) => [...prev, nuevoUsuario]);
+    setUsuarioActual(nuevoUsuario); // Inicia sesión automáticamente al registrarse
+    return { exito: true };
+  }
+
+  function iniciarSesion(email, password) {
+    const usuario = usuarios.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+    );
+    if (usuario) {
+      setUsuarioActual(usuario);
+      return { exito: true };
+    }
+    return { exito: false, mensaje: 'Correo o contraseña incorrectos.' };
+  }
+
+  function cerrarSesion() {
+    setUsuarioActual(null);
+  }
+
+  // Funciones del Carrito
   function agregarAlCarrito(producto) {
     if (!producto) return;
 
@@ -89,9 +149,7 @@ function App() {
     const stockMaximo = Number(prodEnInventario.stock);
     let cantidadFinal = Number(nuevaCantidad) || 1;
 
-    if (cantidadFinal > stockMaximo) {
-      cantidadFinal = stockMaximo;
-    }
+    if (cantidadFinal > stockMaximo) cantidadFinal = stockMaximo;
 
     if (cantidadFinal <= 0) {
       eliminarDelCarrito(id);
@@ -128,7 +186,11 @@ function App() {
 
   return (
     <>
-      <Cabecera cantidadTotal={carrito.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)} />
+      <Cabecera 
+        cantidadTotal={carrito.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)} 
+        usuarioActual={usuarioActual}
+        cerrarSesion={cerrarSesion}
+      />
 
       <Routes>
         <Route path="/" element={<PagPrincipal agregar={agregarAlCarrito} />} />
@@ -139,11 +201,22 @@ function App() {
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/cobertura" element={<Cobertura />} />
         <Route 
+          path="/login" 
+          element={
+            <Login 
+              iniciarSesion={iniciarSesion} 
+              registrarUsuario={registrarUsuario} 
+              usuarioActual={usuarioActual}
+            />
+          } 
+        />
+        <Route 
           path="/carrito" 
           element={
             <Carrito 
               carrito={carrito} 
               productos={productos}
+              usuarioActual={usuarioActual}
               cambiarCantidad={cambiarCantidad} 
               eliminarDelCarrito={eliminarDelCarrito} 
               vaciarCarrito={vaciarCarrito}
