@@ -1,0 +1,988 @@
+/* ============================================================
+   1. VARIABLES GLOBALES Y RESET BASE
+============================================================ */
+:root {
+  --color-primario: #e2711d;        /* Naranja corporativo */
+  --color-primario-hover: #cc6012;  /* Naranja oscuro para hover */
+  --color-secundario: #1a365d;      /* Azul marino corporativo */
+  --color-fondo: #f8fafc;           /* Fondo gris muy claro */
+  --color-blanco: #ffffff;
+  --color-texto: #2d3748;
+  --color-borde: #e2e8f0;
+  --color-exito: #276749;
+  --color-error: #e53e3e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   2. ESTRUCTURA Y FOOTER PEGAR AL FONDO (#root)
+============================================================ */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contenedor-principal {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+/* ============================================================
+   3. CABECERA Y NAVEGACIÓN
+============================================================ */
+.cabecera {
+  background-color: var(--color-blanco);
+  border-bottom: 1px solid var(--color-borde);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.marca {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-secundario);
+  text-decoration: none;
+}
+
+.menu {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.menu a {
+  text-decoration: none;
+  color: var(--color-texto);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.menu a:hover,
+.menu a.active {
+  color: var(--color-primario);
+}
+
+.boton-menu {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.linea-menu {
+  width: 25px;
+  height: 3px;
+  background-color: var(--color-secundario);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   4. BOTONES Y COMPONENTES REUTILIZABLES
+============================================================ */
+.boton {
+  display: inline-block;
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  text-align: center;
+}
+
+.boton:hover {
+  background-color: var(--color-primario-hover);
+}
+
+.boton:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   5. PÁGINA DE INICIO (HOME)
+============================================================ */
+.hero-home {
+  background: linear-gradient(135deg, var(--color-secundario) 0%, #2b4c7e 100%);
+  color: var(--color-blanco);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 8px 24px rgba(26, 54, 93, 0.15);
+  text-align: center;
+}
+
+.insignia-hero {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fbd38d;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+}
+
+.hero-home h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  line-height: 1.2;
+}
+
+.bajada-hero-home {
+  max-width: 650px;
+  margin: 0 auto 1.8rem auto;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+}
+
+.acciones-hero {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primario {
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+}
+
+.btn-hero-secundario {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-blanco);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-hero-secundario:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Beneficios */
+.grilla-beneficios {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.tarjeta-beneficio {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: transform 0.2s ease;
+}
+
+.tarjeta-beneficio:hover {
+  transform: translateY(-4px);
+}
+
+.icono-beneficio {
+  font-size: 2.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.tarjeta-beneficio h3 {
+  font-size: 1.1rem;
+  color: var(--color-secundario);
+  margin-bottom: 0.4rem;
+}
+
+.tarjeta-beneficio p {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Destacados */
+.seccion-destacados {
+  margin-bottom: 3rem;
+}
+
+.cabecera-seccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.cabecera-seccion h2 {
+  font-size: 1.5rem;
+  color: var(--color-secundario);
+}
+
+.link-ver-mas {
+  color: var(--color-primario);
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.link-ver-mas:hover {
+  text-decoration: underline;
+}
+
+/* Banner CTA Home */
+.banner-cta-home {
+  background-color: var(--color-secundario);
+  color: var(--color-blanco);
+  border-radius: 12px;
+  padding: 2.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.texto-cta h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.texto-cta p {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.btn-cta-solido {
+  background-color: var(--color-primario);
+  padding: 0.85rem 1.8rem;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   6. CATÁLOGO DE PRODUCTOS
+============================================================ */
+.grilla-productos {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.Producto {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Producto:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.Producto img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.Producto h3 {
+  font-size: 1.1rem;
+  color: var(--color-secundario);
+  margin-bottom: 0.5rem;
+}
+
+.Producto p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  flex: 1;
+}
+
+.Producto .precio {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-secundario);
+  margin-bottom: 1rem;
+}
+
+.boton-añadir {
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+  border: none;
+  padding: 0.6rem 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.boton-añadir:hover:not(:disabled) {
+  background-color: var(--color-primario-hover);
+}
+
+/* ============================================================
+   7. CARRITO DE COMPRAS
+============================================================ */
+.disposicion-carrito {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.lista-carrito {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 2;
+}
+
+.item-carrito {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.item-carrito img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.detalles-item {
+  flex: 1;
+}
+
+.detalles-item h3 {
+  font-size: 1rem;
+  color: var(--color-secundario);
+}
+
+.precio-unitario {
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.controles-cantidad input {
+  width: 60px;
+  padding: 0.4rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.subtotal-item {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--color-secundario);
+}
+
+.btn-eliminar {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+}
+
+.btn-eliminar:hover {
+  background-color: #fff5f5;
+}
+
+.resumen-compra {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 1.5rem;
+  flex: 1;
+  height: fit-content;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.resumen-compra h2 {
+  font-size: 1.25rem;
+  color: var(--color-secundario);
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.fila-resumen {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.fila-resumen.total {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-secundario);
+  border-top: 1px solid var(--color-borde);
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.btn-pagar {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* ============================================================
+   8. MODAL DE PAGO / CHECKOUT
+============================================================ */
+.modal-pago {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.contenido-modal {
+  background-color: var(--color-blanco);
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.cabecera-modal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-borde);
+  padding-bottom: 0.75rem;
+}
+
+.cabecera-modal h2 {
+  font-size: 1.3rem;
+  color: var(--color-secundario);
+}
+
+.badge-seguro {
+  background-color: #e6fffa;
+  color: #234e52;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+}
+
+.seccion-form {
+  border: none;
+  margin-bottom: 1.2rem;
+}
+
+.seccion-form legend {
+  font-weight: bold;
+  color: var(--color-secundario);
+  margin-bottom: 0.6rem;
+}
+
+.seccion-form label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  margin-top: 0.6rem;
+}
+
+.seccion-form input[type="text"],
+.seccion-form input[type="tel"],
+.seccion-form input[type="email"] {
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.acciones-modal {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancelar {
+  background: #cbd5e1;
+  color: #334155;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ============================================================
+   9. LOGIN Y REGISTRO
+============================================================ */
+.tarjeta-login {
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-blanco);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-borde);
+}
+
+.titulo-login {
+  font-size: 1.6rem;
+  color: var(--color-secundario);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.pestanas-login {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.8rem;
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.btn-pestana {
+  flex: 1;
+  padding: 0.8rem;
+  border: none;
+  background: transparent;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #718096;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-pestana.activa {
+  color: var(--color-primario);
+  border-bottom-color: var(--color-primario);
+}
+
+.form-login {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.grupo-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.grupo-campo label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-secundario);
+}
+
+.grupo-campo input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--color-texto);
+  background-color: #fafafa;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grupo-campo input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  background-color: var(--color-blanco);
+  box-shadow: 0 0 0 3px rgba(226, 113, 29, 0.15);
+}
+
+.fila-doble-login {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-login-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.85rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.alerta-error {
+  background-color: #fff5f5;
+  color: var(--color-error);
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+  border-left: 4px solid var(--color-error);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ============================================================
+   10. NOSOTROS Y COBERTURA
+============================================================ */
+.hero-nosotros {
+  margin-bottom: 2.5rem;
+}
+
+.insignia-subtitulo {
+  display: inline-block;
+  background-color: #feebc8;
+  color: #c05621;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+}
+
+.hero-nosotros h1 {
+  font-size: 2.2rem;
+  color: var(--color-secundario);
+  margin-bottom: 0.8rem;
+}
+
+.bajada-hero {
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  color: #4a5568;
+}
+
+.barras-metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  background: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.bloque-metrica {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.numero-metrica {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-primario);
+}
+
+.label-metrica {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.grilla-tarjetas-nosotros {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.tarjeta-pilar {
+  background: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-top: 4px solid var(--color-primario);
+}
+
+.tarjeta-pilar:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.icono-pilar {
+  font-size: 2.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.tarjeta-pilar h3 {
+  font-size: 1.2rem;
+  color: var(--color-secundario);
+  margin-bottom: 0.6rem;
+}
+
+.tarjeta-pilar p {
+  font-size: 0.93rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.banner-cta-nosotros {
+  background-color: #edf2f7;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.banner-cta-nosotros h2 {
+  color: var(--color-secundario);
+  margin-bottom: 0.5rem;
+}
+
+.grilla-cobertura {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.tarjeta-cobertura {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-cobertura:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.cabecera-tarjeta-cobertura {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.icono-ubicacion {
+  font-size: 1.5rem;
+}
+
+.badge-estado {
+  background-color: #e6fffa;
+  color: #234e52;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+}
+
+.tarjeta-cobertura h3 {
+  font-size: 1.25rem;
+  color: var(--color-secundario);
+  margin-bottom: 0.5rem;
+}
+
+.desc-cobertura {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin-bottom: 1.2rem;
+  flex: 1;
+}
+
+.info-tiempo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  color: var(--color-secundario);
+}
+
+.caja-info-despacho {
+  background-color: var(--color-blanco);
+  border: 1px solid var(--color-borde);
+  border-left: 5px solid var(--color-primario);
+  border-radius: 10px;
+  padding: 1.8rem;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.icono-info {
+  font-size: 2.5rem;
+}
+
+.caja-info-despacho h3 {
+  color: var(--color-secundario);
+  margin-bottom: 0.8rem;
+}
+
+.caja-info-despacho ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.93rem;
+  color: #4a5568;
+}
+
+/* ============================================================
+   11. FOOTER
+============================================================ */
+footer {
+  background-color: var(--color-secundario);
+  color: var(--color-blanco);
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+/* ============================================================
+   12. MEDIA QUERIES (RESPONSIVE)
+============================================================ */
+
+/* Tablet (600px en adelante) */
+@media (min-width: 600px) {
+  .grilla-beneficios {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grilla-productos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grilla-tarjetas-nosotros {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grilla-cobertura {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .banner-cta-home {
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
+  }
+
+  .fila-doble-login {
+    flex-direction: row;
+    gap: 0.8rem;
+  }
+
+  .fila-doble-login > .grupo-campo {
+    flex: 1;
+  }
+}
+
+/* Desktop (900px en adelante) */
+@media (min-width: 900px) {
+  .grilla-productos {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .grilla-cobertura {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .disposicion-carrito {
+    flex-direction: row;
+  }
+}
+
+/* Ajustes menú móvil (menor a 768px) */
+@media (max-width: 768px) {
+  .boton-menu {
+    display: flex;
+  }
+
+  .menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-blanco);
+    flex-direction: column;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--color-borde);
+  }
+
+  .menu.menu-abierto {
+    display: flex;
+  }
+}
