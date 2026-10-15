@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { Route, Routes } from "react-router-dom";
+import AdminDashboard from './pages/AdminDashboard';
 import { productos as productosIniciales } from './data/productos';
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
@@ -10,23 +11,27 @@ import Cobertura from './pages/Cobertura';
 import Cartelera from './pages/CarteleraProductos';
 import Carrito from './pages/Carrito';
 import Login from './pages/Login';
+import DetalleProducto from './pages/DetalleProducto';
+import Ofertas from './pages/Ofertas';
+import Contacto from './pages/Contacto';
+import Blog from './pages/Blog';
+import PagoExitoso from './pages/PagoExitoso';
+import PagoError from './pages/PagoError';
 import Error from './pages/NotFound404';
 
 function App() {
-
   const [productos, setProductos] = useState(() => {
     try {
       const guardado = localStorage.getItem('productosStock');
       if (guardado) {
         const parsed = JSON.parse(guardado);
-        if (parsed.length === productosIniciales.length) return parsed;
+        if (parsed.length > 0) return parsed;
       }
       return productosIniciales;
     } catch {
       return productosIniciales;
     }
   });
-
 
   const [carrito, setCarrito] = useState(() => {
     try {
@@ -36,7 +41,6 @@ function App() {
       return [];
     }
   });
-
 
   const [usuarios, setUsuarios] = useState(() => {
     try {
@@ -55,7 +59,6 @@ function App() {
       return null;
     }
   });
-
 
   useEffect(() => {
     localStorage.setItem('productosStock', JSON.stringify(productos));
@@ -77,14 +80,13 @@ function App() {
     }
   }, [usuarioActual]);
 
-  // Funciones de Autenticación
   function registrarUsuario(nuevoUsuario) {
     const existe = usuarios.some(u => u.email.toLowerCase() === nuevoUsuario.email.toLowerCase());
     if (existe) {
       return { exito: false, mensaje: 'El correo ya se encuentra registrado.' };
     }
     setUsuarios((prev) => [...prev, nuevoUsuario]);
-    setUsuarioActual(nuevoUsuario); // Inicia sesión automáticamente al registrarse
+    setUsuarioActual(nuevoUsuario);
     return { exito: true };
   }
 
@@ -103,7 +105,6 @@ function App() {
     setUsuarioActual(null);
   }
 
-  // Funciones del Carrito
   function agregarAlCarrito(producto) {
     if (!producto) return;
 
@@ -194,12 +195,13 @@ function App() {
 
       <Routes>
         <Route path="/" element={<PagPrincipal productos={productos} agregar={agregarAlCarrito} />} />
-        <Route 
-          path="/productos" 
-          element={<Cartelera productos={productos} agregar={agregarAlCarrito} />} 
-        />
+        <Route path="/productos" element={<Cartelera productos={productos} agregar={agregarAlCarrito} />} />
+        <Route path="/producto/:id" element={<DetalleProducto productos={productos} agregar={agregarAlCarrito} />} />
+        <Route path="/ofertas" element={<Ofertas productos={productos} agregar={agregarAlCarrito} />} />
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/cobertura" element={<Cobertura />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route 
           path="/login" 
           element={
@@ -221,6 +223,18 @@ function App() {
               eliminarDelCarrito={eliminarDelCarrito} 
               vaciarCarrito={vaciarCarrito}
               descontarStock={descontarStock}
+            />
+          } 
+        />
+        <Route path="/pago-exitoso" element={<PagoExitoso />} />
+        <Route path="/pago-error" element={<PagoError />} />
+        <Route 
+          path="/admin" 
+          element={
+            <AdminDashboard 
+              productos={productos} 
+              setProductos={setProductos} 
+              usuarios={usuarios} 
             />
           } 
         />
