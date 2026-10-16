@@ -96,11 +96,15 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                 </div>
 
                 <div className="controles-cantidad">
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max={prodStock} 
-                    value={item.cantidad} 
+                  <input
+                    type="number"
+                    min="1"
+                    max={prodStock}
+                    step="1"
+                    onKeyDown={(e) => {
+                      if (['.', ',', '-', '+', 'e'].includes(e.key)) e.preventDefault();
+                    }}
+                    value={item.cantidad}
                     onChange={(e) => cambiarCantidad(item.id, e.target.value)}
                   />
                 </div>
