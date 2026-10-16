@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { calcularResumen } from '../utils/carrito';
 
 function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock }) {
   const [mostrarModal, setMostrarModal] = useState(false);
