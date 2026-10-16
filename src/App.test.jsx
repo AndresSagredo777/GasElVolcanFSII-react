@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
-import Cabecera from './components/Cabecera';
+import Navegacion from './components/Navegacion';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import Contacto from './pages/Contacto';
@@ -17,13 +17,13 @@ describe('Suite de 10 Pruebas Unitarias - Gas El Volcan', () => {
 
   // PRUEBA 1: Renderizado de la Cabecera
   it('1. Debe renderizar el nombre de la marca en la Cabecera', () => {
-    renderConRouter(<Cabecera cantidadTotal={0} usuarioActual={null} />);
+    renderConRouter(<Navegacion cantidadTotal={0} usuarioActual={null} />);
     expect(screen.getByText('Gas El Volcan')).toBeTruthy();
   });
 
   // PRUEBA 2: Conteo del Carrito en Cabecera
   it('2. Debe mostrar la cantidad correcta de items en el carrito', () => {
-    renderConRouter(<Cabecera cantidadTotal={3} usuarioActual={null} />);
+    renderConRouter(<Navegacion cantidadTotal={3} usuarioActual={null} />);
     expect(screen.getByText('🛒 Carrito (3)')).toBeTruthy();
   });
 
@@ -80,7 +80,7 @@ describe('Suite de 10 Pruebas Unitarias - Gas El Volcan', () => {
   // PRUEBA 7: Verificación de Propiedades (Props) en Usuario Logueado
   it('7. Debe mostrar el nombre del usuario cuando hay una sesión activa', () => {
     const usuarioMock = { nombre: 'Carlos Silva', email: 'carlos@test.cl' };
-    renderConRouter(<Cabecera cantidadTotal={0} usuarioActual={usuarioMock} />);
+    renderConRouter(<Navegacion cantidadTotal={0} usuarioActual={usuarioMock} />);
     expect(screen.getByText(/Carlos Silva/)).toBeTruthy();
   });
 

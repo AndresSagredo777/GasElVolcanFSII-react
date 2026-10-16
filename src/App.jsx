@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { productos as productosIniciales } from './data/productos';
-import Cabecera from './components/Cabecera';
+import Navegacion from './components/Navegacion';
 import Footer from './components/Footer';
 import PagPrincipal from './pages/PagPrincipal';
 import Nosotros from './pages/Nosotros';
@@ -120,7 +120,7 @@ function App() {
 
   return (
     <>
-      <Cabecera
+      <Navegacion
         cantidadTotal={calcularCantidadTotal(carrito)}
         usuarioActual={usuarioActual}
         cerrarSesion={cerrarSesion}

@@ -72,6 +72,10 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.cabecera nav {
+  min-width: 0;
+}
+
 .marca {
   font-size: 1.5rem;
   font-weight: 800;
@@ -97,6 +101,15 @@ body {
 .menu a:hover,
 .menu a.active {
   color: var(--color-primario);
+}
+
+.enlace-menu {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+  cursor: pointer;
 }
 
 .boton-menu {
@@ -992,8 +1005,40 @@ footer {
 ============================================================ */
 .grilla-tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
   gap: 1.5rem;
+}
+
+.grilla-tarjetas > * {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .cabecera {
+    padding: 0.85rem 1rem;
+  }
+
+  .menu {
+    gap: 0.9rem;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+  }
+
+  .menu a,
+  .enlace-menu {
+    display: block;
+    width: 100%;
+    padding: 0.35rem 0;
+    text-align: left;
+  }
+
+  .contenedor-principal {
+    padding: 1.25rem 0.85rem;
+  }
+
+  .tarjeta-producto {
+    padding: 1rem;
+  }
 }
 
 .tarjeta-producto {
