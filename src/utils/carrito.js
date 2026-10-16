@@ -11,7 +11,7 @@ export function calcularTotal(carrito) {
     (total, item) => total + item.precio * item.cantidad,
     0
   );
-  const costoEnvio = subtotal > 0 ? COSTO_ENVIO : 0;
+  const costoEnvio = subtotal > 0 ? costo_envio : 0;
   return { subtotal, costoEnvio, total: subtotal + costoEnvio };
 }
 
