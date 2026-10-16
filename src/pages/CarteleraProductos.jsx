@@ -2,7 +2,6 @@ import { useState } from 'react';
 import TarjetaProducto from '../components/TarjetaProducto';
 import { filtrarPorCategoria, obtenerCategorias } from '../utils/funcionesProductos';
 
-
 function CarteleraProductos({ productos, agregar }) {
   const [categoriaSel, setCategoriaSel] = useState('todas');
 
