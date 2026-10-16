@@ -29,6 +29,7 @@ function Cabecera({ cantidadTotal = 0, usuarioActual, cerrarSesion }) {
           <li><NavLink to="/productos" onClick={cerrarMenu}>Productos</NavLink></li>
           <li><NavLink to="/ofertas" onClick={cerrarMenu}>Ofertas</NavLink></li>
           <li><NavLink to="/nosotros" onClick={cerrarMenu}>Nosotros</NavLink></li>
+          <li><NavLink to="/cobertura" onClick={cerrarMenu}>Cobertura</NavLink></li>
           <li><NavLink to="/blog" onClick={cerrarMenu}>Blog</NavLink></li>
           <li><NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink></li>
           <li>

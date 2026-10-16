@@ -10,46 +10,87 @@ function CarteleraProductos({ productos = [], agregarAlCarrito }) {
     : productos.filter((p) => p.categoria === categoriaSeleccionada);
 
   return (
-    <div className="contenedor-principal">
-      <h2>Catálogo de Productos</h2>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>Selecciona tus productos y añádelos a tu pedido.</p>
+    <div className="contenedor-principal" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
+      {/* Encabezado del Catálogo */}
+      <header style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '2.2rem', color: '#1e293b', fontWeight: '800', marginBottom: '0.4rem', letterSpacing: '-0.01em' }}>
+          Catálogo de Productos
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '1rem' }}>
+          Selecciona tus productos y añádelos a tu pedido.
+        </p>
+      </header>
 
-      {/* Filtros por Categoría */}
-      <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        {categorias.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setCategoriaSeleccionada(cat)}
-            style={{
-              padding: '0.5rem 1.2rem',
-              borderRadius: '20px',
-              border: '1px solid #e65100',
-              backgroundColor: categoriaSeleccionada === cat ? '#e65100' : '#fff',
-              color: categoriaSeleccionada === cat ? '#fff' : '#e65100',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            {cat === 'Todas' ? 'Todos los productos' : cat}
-          </button>
-        ))}
+      {/* Filtros Estilo Píldora */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
+        {categorias.map((cat) => {
+          const estaActivo = categoriaSeleccionada === cat;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategoriaSeleccionada(cat)}
+              style={{
+                padding: '0.6rem 1.4rem',
+                borderRadius: '9999px',
+                border: estaActivo ? '2px solid #e65100' : '1px solid #0f172a',
+                backgroundColor: estaActivo ? '#e65100' : '#ffffff',
+                color: estaActivo ? '#ffffff' : '#0f172a',
+                fontWeight: '700',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                boxShadow: estaActivo ? '0 4px 10px rgba(230, 81, 0, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {cat === 'Todas' ? 'Todos los productos' : cat}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Lista de Tarjetas */}
-      <div className="grid-productos" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+      {/* Parrilla de Tarjetas */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+        gap: '1.5rem'
+      }}>
         {productosFiltrados.map((prod) => (
-          <div key={prod.id} className="tarjeta-producto" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1rem', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div 
+            key={prod.id} 
+            style={{
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+          >
             <div>
-              <img src={prod.imagen} alt={prod.nombre} style={{ width: '100%', height: '180px', objectFit: 'contain', marginBottom: '1rem' }} />
-              <h3>{prod.nombre}</h3>
-              <p style={{ fontSize: '0.85rem', color: '#666', minHeight: '40px' }}>{prod.descripcion}</p>
-              <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#2e7d32' : '#c62828', fontWeight: 'bold' }}>
+              <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                <img 
+                  src={prod.imagen ? (prod.imagen.startsWith('/') ? prod.imagen : `/${prod.imagen}`) : '/assets/cilindro11kg.png'} 
+                  alt={prod.nombre} 
+                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/cilindro11kg.png'; }}
+                />
+              </div>
+              <h3 style={{ fontSize: '1.15rem', color: '#1e293b', fontWeight: '700', marginBottom: '0.5rem' }}>
+                {prod.nombre}
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: '1.4', minHeight: '42px', marginBottom: '0.8rem' }}>
+                {prod.descripcion}
+              </p>
+              <p style={{ fontSize: '0.875rem', color: prod.stock > 0 ? '#15803d' : '#b91c1c', fontWeight: '600', marginBottom: '0.8rem' }}>
                 {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
               </p>
-              <h4 style={{ fontSize: '1.3rem', color: '#1a237e', margin: '0.5rem 0' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0f172a', marginBottom: '1.2rem' }}>
                 ${prod.precio.toLocaleString('es-CL')}
-              </h4>
+              </div>
             </div>
 
             <button
@@ -58,14 +99,15 @@ function CarteleraProductos({ productos = [], agregarAlCarrito }) {
               disabled={prod.stock <= 0}
               style={{
                 width: '100%',
-                padding: '0.7rem',
-                backgroundColor: prod.stock > 0 ? '#e65100' : '#ccc',
-                color: '#fff',
+                padding: '0.75rem',
+                backgroundColor: prod.stock > 0 ? '#e65100' : '#cbd5e1',
+                color: '#ffffff',
                 border: 'none',
-                borderRadius: '4px',
-                fontWeight: 'bold',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '0.95rem',
                 cursor: prod.stock > 0 ? 'pointer' : 'not-allowed',
-                marginTop: '1rem'
+                boxShadow: prod.stock > 0 ? '0 4px 10px rgba(230, 81, 0, 0.2)' : 'none'
               }}
             >
               {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
