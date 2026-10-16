@@ -1,22 +1,25 @@
 import { useState } from 'react';
 import TarjetaProducto from '../components/TarjetaProducto';
-import { filtrarPorCategoria, obtenerCategorias } from '../utils/funcionesProductos';
+import { filtrarPorCategoria, obtenerCategorias } from '../utils/productos';
 
-function CarteleraProductos({ productos, agregar }) {
+function CarteleraProductos({ productos = [], agregarAlCarrito }) {
   const [categoriaSel, setCategoriaSel] = useState('todas');
 
   const categorias = obtenerCategorias(productos);
   const productosFiltrados = filtrarPorCategoria(productos, categoriaSel);
 
   return (
-    <main className="contenedor-principal">
-      <h1>Catálogo de Productos</h1>
-      <p>Selecciona tus productos y añádelos a tu pedido.</p>
+    <div className="contenedor-principal">
+      <header className="encabezado-catalogo">
+        <h1>Catálogo de Productos</h1>
+        <p>Selecciona tus productos y añádelos a tu pedido.</p>
+      </header>
 
       <div className="filtros-categoria">
         {categorias.map((cat) => (
           <button
             key={cat}
+            type="button"
             className={`boton-categoria ${categoriaSel === cat ? 'activa' : ''}`}
             onClick={() => setCategoriaSel(cat)}
           >
@@ -25,12 +28,13 @@ function CarteleraProductos({ productos, agregar }) {
         ))}
       </div>
 
-      <div className="grilla-productos">
+      <div className="grilla-tarjetas">
         {productosFiltrados.map((producto) => (
-          <TarjetaProducto key={producto.id} producto={producto} onAgregar={agregar} />
+          <TarjetaProducto key={producto.id} producto={producto} onAgregar={agregarAlCarrito} />
         ))}
       </div>
-    </main>
+    </div>
   );
 }
+
 export default CarteleraProductos;
