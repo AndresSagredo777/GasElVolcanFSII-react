@@ -1,51 +1,30 @@
-import React from 'react';
-import { Card, Button } from 'react-bootstrap';
+import { formatearPrecio } from '../utils/precio';
+import { describirStock, obtenerRutaImagen } from '../utils/productos';
 
-function Productos({ producto, agregar }) {
-    const sinStock = producto.stock === 0;
+function TarjetaProducto({ producto, onAgregar }) {
+  const hayStock = producto.stock > 0;
 
-    return (
-        <Card className="h-100 shadow-sm border-0">
-            {producto.imagen && (
-                <Card.Img
-                    variant="top"
-                    src={producto.imagen}
-                    alt={producto.nombre}
-                    style={{ height: '160px', objectFit: 'contain', padding: '15px' }}
-                />
-            )}
-            <Card.Body className="d-flex flex-column">
-                <Card.Title className="fs-5 fw-bold">{producto.nombre}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted small">{producto.categoria}</Card.Subtitle>
-                
-                <Card.Text className="text-secondary small flex-grow-1">
-                    {producto.descripcion}
-                </Card.Text>
+  return (
+    <article className="Producto">
+      <img src={obtenerRutaImagen(producto)} alt={producto.nombre} />
+      <h3>{producto.nombre}</h3>
+      <p>{producto.descripcion}</p>
 
-                <div className="my-2">
-                    <div className="fw-bold fs-4 text-primary">
-                        ${producto.precio ? producto.precio.toLocaleString('es-CL') : 0}
-                    </div>
-                    <div className="small mt-1">
-                        {sinStock ? (
-                            <span className="text-danger fw-bold">Agotado</span>
-                        ) : (
-                            <span className="text-muted">Stock: {producto.stock} u.</span>
-                        )}
-                    </div>
-                </div>
+      <p className={hayStock ? 'stock-disponible' : 'stock-agotado'}>
+        {describirStock(producto.stock)}
+      </p>
 
-                <Button
-                    variant="warning"
-                    className="text-white fw-bold w-100 mt-2"
-                    onClick={() => agregar(producto)}
-                    disabled={sinStock}
-                >
-                    {sinStock ? 'Sin stock' : 'Añadir'}
-                </Button>
-            </Card.Body>
-        </Card>
-    );
+      <span className="precio">{formatearPrecio(producto.precio)}</span>
+
+      <button
+        className="boton-añadir"
+        onClick={() => onAgregar(producto)}
+        disabled={!hayStock}
+      >
+        {hayStock ? 'Añadir al pedido' : 'Sin Stock'}
+      </button>
+    </article>
+  );
 }
 
-export default Productos;
+export default TarjetaProducto;

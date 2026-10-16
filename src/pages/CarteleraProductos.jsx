@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function CarteleraProductos({ productos, agregar }) {
   const [categoriaSel, setCategoriaSel] = useState('todas');
@@ -13,7 +13,6 @@ function CarteleraProductos({ productos, agregar }) {
     <main className="contenedor-principal">
       <h1>Catálogo de Productos</h1>
       <p>Selecciona tus productos y añádelos a tu pedido.</p>
-
       <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '2rem' }}>
         {categorias.map((cat) => (
           <button 
