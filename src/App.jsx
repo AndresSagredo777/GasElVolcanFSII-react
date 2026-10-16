@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+
+// Importación de Estilos CSS
 import './App.css';
 import './index.css';
+
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
+
 import PagPrincipal from './pages/PagPrincipal';
 import CarteleraProductos from './pages/CarteleraProductos';
 import DetalleProducto from './pages/DetalleProducto';
@@ -81,6 +85,11 @@ function App() {
     return { exito: false, mensaje: 'Correo o contraseña incorrectos.' };
   };
 
+  const cerrarSesion = () => {
+    setUsuarioActual(null);
+    localStorage.removeItem('usuarioActual');
+  };
+
   const registrarUsuario = (nuevoUsuario) => {
     const existe = usuarios.some((u) => u.email === nuevoUsuario.email);
     if (existe) {
@@ -155,7 +164,11 @@ function App() {
 
   return (
     <div className="app-container">
-      <Cabecera cantidadTotal={cantidadTotal} usuarioActual={usuarioActual} />
+      <Cabecera 
+        cantidadTotal={cantidadTotal} 
+        usuarioActual={usuarioActual} 
+        cerrarSesion={cerrarSesion} 
+      />
       
       <main className="main-content">
         <Routes>
