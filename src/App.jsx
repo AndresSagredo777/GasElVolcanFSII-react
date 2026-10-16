@@ -1,249 +1,117 @@
-import { useState, useEffect } from 'react';
-import './App.css';
-import { Route, Routes } from "react-router-dom";
-import AdminDashboard from './pages/AdminDashboard';
-import { productos as productosIniciales } from './data/productos';
+import { describe, it, expect } from 'vitest';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
-import PagPrincipal from './pages/PagPrincipal';
-import Nosotros from './pages/Nosotros';
-import Cobertura from './pages/Cobertura';
-import Cartelera from './pages/CarteleraProductos';
-import Carrito from './pages/Carrito';
 import Login from './pages/Login';
-import DetalleProducto from './pages/DetalleProducto';
-import Ofertas from './pages/Ofertas';
 import Contacto from './pages/Contacto';
-import Blog from './pages/Blog';
-import PagoExitoso from './pages/PagoExitoso';
-import PagoError from './pages/PagoError';
-import Error from './pages/NotFound404';
+import { obtenerProductos, crearProducto } from './data/productos';
 
-function App() {
-  const [productos, setProductos] = useState(() => {
-    try {
-      const guardado = localStorage.getItem('productosStock');
-      if (guardado) {
-        const parsed = JSON.parse(guardado);
-        if (parsed.length > 0) return parsed;
-      }
-      return productosIniciales;
-    } catch {
-      return productosIniciales;
-    }
+const renderConRouter = (componente) => {
+  return render(<BrowserRouter>{componente}</BrowserRouter>);
+};
+
+describe('Suite de 10 Pruebas Unitarias - Gas El Volcan', () => {
+
+  // PRUEBA 1: Renderizado de la Cabecera
+  it('1. Debe renderizar el nombre de la marca en la Cabecera', () => {
+    renderConRouter(<Cabecera cantidadTotal={0} usuarioActual={null} />);
+    expect(screen.getByText('Gas El Volcan')).toBeTruthy();
   });
 
-  const [carrito, setCarrito] = useState(() => {
-    try {
-      const guardado = localStorage.getItem('carritoProductos');
-      return guardado ? JSON.parse(guardado) : [];
-    } catch {
-      return [];
-    }
+  // PRUEBA 2: Conteo del Carrito en Cabecera
+  it('2. Debe mostrar la cantidad correcta de items en el carrito', () => {
+    renderConRouter(<Cabecera cantidadTotal={3} usuarioActual={null} />);
+    expect(screen.getByText('🛒 Carrito (3)')).toBeTruthy();
   });
 
-  const [usuarios, setUsuarios] = useState(() => {
-    try {
-      const guardados = localStorage.getItem('usuariosGas');
-      return guardados ? JSON.parse(guardados) : [];
-    } catch {
-      return [];
-    }
+  // PRUEBA 3: Renderizado del Footer
+  it('3. Debe renderizar la información de contacto en el Footer', () => {
+    renderConRouter(<Footer />);
+    expect(screen.getByText('gaselvolcan@gmail.cl')).toBeTruthy();
   });
 
-  const [usuarioActual, setUsuarioActual] = useState(() => {
-    try {
-      const guardado = localStorage.getItem('usuarioActualGas');
-      return guardado ? JSON.parse(guardado) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem('productosStock', JSON.stringify(productos));
-  }, [productos]);
-
-  useEffect(() => {
-    localStorage.setItem('carritoProductos', JSON.stringify(carrito));
-  }, [carrito]);
-
-  useEffect(() => {
-    localStorage.setItem('usuariosGas', JSON.stringify(usuarios));
-  }, [usuarios]);
-
-  useEffect(() => {
-    if (usuarioActual) {
-      localStorage.setItem('usuarioActualGas', JSON.stringify(usuarioActual));
-    } else {
-      localStorage.removeItem('usuarioActualGas');
-    }
-  }, [usuarioActual]);
-
-  function registrarUsuario(nuevoUsuario) {
-    const existe = usuarios.some(u => u.email.toLowerCase() === nuevoUsuario.email.toLowerCase());
-    if (existe) {
-      return { exito: false, mensaje: 'El correo ya se encuentra registrado.' };
-    }
-    setUsuarios((prev) => [...prev, nuevoUsuario]);
-    setUsuarioActual(nuevoUsuario);
-    return { exito: true };
-  }
-
-  function iniciarSesion(email, password) {
-    const usuario = usuarios.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-    if (usuario) {
-      setUsuarioActual(usuario);
-      return { exito: true };
-    }
-    return { exito: false, mensaje: 'Correo o contraseña incorrectos.' };
-  }
-
-  function cerrarSesion() {
-    setUsuarioActual(null);
-  }
-
-  function agregarAlCarrito(producto) {
-    if (!producto) return;
-
-    const prodEnInventario = productos.find((p) => Number(p.id) === Number(producto.id));
-    const itemEnCarrito = carrito.find((item) => Number(item.id) === Number(producto.id));
-    const cantidadActual = itemEnCarrito ? itemEnCarrito.cantidad : 0;
-    const stockDisponible = prodEnInventario ? Number(prodEnInventario.stock) : 0;
-
-    if (stockDisponible <= 0) {
-      alert(`¡El producto ${producto.nombre} está agotado!`);
-      return;
-    }
-
-    if (cantidadActual + 1 > stockDisponible) {
-      alert(`Solo quedan ${stockDisponible} unidades disponibles de ${producto.nombre}.`);
-      return;
-    }
-
-    setCarrito((prevCarrito) => {
-      if (itemEnCarrito) {
-        return prevCarrito.map((item) =>
-          Number(item.id) === Number(producto.id)
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        );
-      }
-      return [
-        ...prevCarrito, 
-        { 
-          ...producto, 
-          cantidad: 1, 
-          stock: stockDisponible,
-          img: producto.imagen || producto.img 
-        }
-      ];
-    });
-  }
-
-  function cambiarCantidad(id, nuevaCantidad) {
-    const prodEnInventario = productos.find((p) => Number(p.id) === Number(id));
-    if (!prodEnInventario) return;
-
-    const stockMaximo = Number(prodEnInventario.stock);
-    let cantidadFinal = Number(nuevaCantidad) || 1;
-
-    if (cantidadFinal > stockMaximo) cantidadFinal = stockMaximo;
-
-    if (cantidadFinal <= 0) {
-      eliminarDelCarrito(id);
-      return;
-    }
-
-    setCarrito((prev) =>
-      prev.map((item) =>
-        Number(item.id) === Number(id) ? { ...item, cantidad: cantidadFinal } : item
-      )
-    );
-  }
-
-  function eliminarDelCarrito(id) {
-    setCarrito((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
-  }
-
-  function vaciarCarrito() {
-    setCarrito([]);
-  }
-
-  function descontarStock() {
-    setProductos((prevProductos) =>
-      prevProductos.map((prod) => {
-        const itemComprado = carrito.find((item) => Number(item.id) === Number(prod.id));
-        if (itemComprado) {
-          const nuevoStock = Number(prod.stock) - Number(itemComprado.cantidad);
-          return { ...prod, stock: nuevoStock < 0 ? 0 : nuevoStock };
-        }
-        return prod;
-      })
-    );
-  }
-
-  return (
-    <>
-      <Cabecera 
-        cantidadTotal={carrito.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)} 
-        usuarioActual={usuarioActual}
-        cerrarSesion={cerrarSesion}
+  // PRUEBA 4: Manejo de Inputs en Login
+  it('4. Debe permitir interactuar con los campos de correo y contraseña en Login', () => {
+    renderConRouter(
+      <Login 
+        iniciarSesion={() => ({ exito: false, mensaje: 'Error' })} 
+        registrarUsuario={() => {}} 
+        usuarioActual={null} 
       />
+    );
 
-      <Routes>
-        <Route path="/" element={<PagPrincipal productos={productos} agregar={agregarAlCarrito} />} />
-        <Route path="/productos" element={<Cartelera productos={productos} agregar={agregarAlCarrito} />} />
-        <Route path="/producto/:id" element={<DetalleProducto productos={productos} agregar={agregarAlCarrito} />} />
-        <Route path="/ofertas" element={<Ofertas productos={productos} agregar={agregarAlCarrito} />} />
-        <Route path="/nosotros" element={<Nosotros />} />
-        <Route path="/cobertura" element={<Cobertura />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/contacto" element={<Contacto />} />
-        <Route 
-          path="/login" 
-          element={
-            <Login 
-              iniciarSesion={iniciarSesion} 
-              registrarUsuario={registrarUsuario} 
-              usuarioActual={usuarioActual}
-            />
-          } 
-        />
-        <Route 
-          path="/carrito" 
-          element={
-            <Carrito 
-              carrito={carrito} 
-              productos={productos}
-              usuarioActual={usuarioActual}
-              cambiarCantidad={cambiarCantidad} 
-              eliminarDelCarrito={eliminarDelCarrito} 
-              vaciarCarrito={vaciarCarrito}
-              descontarStock={descontarStock}
-            />
-          } 
-        />
-        <Route path="/pago-exitoso" element={<PagoExitoso />} />
-        <Route path="/pago-error" element={<PagoError />} />
-        <Route 
-          path="/admin" 
-          element={
-            <AdminDashboard 
-              productos={productos} 
-              setProductos={setProductos} 
-              usuarios={usuarios} 
-            />
-          } 
-        />
-        <Route path="*" element={<Error />} />
-      </Routes>
+    const inputEmail = screen.getByPlaceholderText('ejemplo@correo.cl');
+    const inputPass = screen.getByPlaceholderText('••••••••');
+    
+    fireEvent.change(inputEmail, { target: { value: 'usuario@test.cl' } });
+    fireEvent.change(inputPass, { target: { value: 'clave123' } });
+    
+    expect(inputEmail.value).toBe('usuario@test.cl');
+    expect(inputPass.value).toBe('clave123');
+  });
 
-      <Footer />
-    </>
-  );
-}
+  // PRUEBA 5: Cambio de Estado en Inputs de Formulario (Contacto)
+  it('5. Debe actualizar el valor del campo de correo en Contacto al escribir', () => {
+    renderConRouter(<Contacto />);
+    const inputEmail = screen.getByPlaceholderText('correo@ejemplo.cl');
+    fireEvent.change(inputEmail, { target: { value: 'cliente@test.cl' } });
+    expect(inputEmail.value).toBe('cliente@test.cl');
+  });
 
-export default App;
+  // PRUEBA 6: Simulación de Evento de Envío en Formulario
+  it('6. Debe mostrar mensaje de éxito al enviar el formulario de Contacto', () => {
+    renderConRouter(<Contacto />);
+    const inputNombre = screen.getByPlaceholderText('Juan Pérez');
+    const inputEmail = screen.getByPlaceholderText('correo@ejemplo.cl');
+    const inputMensaje = screen.getByPlaceholderText('Escribe tu mensaje aquí...');
+    const botonEnviar = screen.getByRole('button', { name: /Enviar Mensaje/i });
+
+    fireEvent.change(inputNombre, { target: { value: 'Pedro Soto' } });
+    fireEvent.change(inputEmail, { target: { value: 'pedro@correo.cl' } });
+    fireEvent.change(inputMensaje, { target: { value: 'Necesito una cotización de 5 cilindros.' } });
+    fireEvent.click(botonEnviar);
+
+    expect(screen.getByText(/¡Mensaje enviado con éxito!/i)).toBeTruthy();
+  });
+
+  // PRUEBA 7: Verificación de Propiedades (Props) en Usuario Logueado
+  it('7. Debe mostrar el nombre del usuario cuando hay una sesión activa', () => {
+    const usuarioMock = { nombre: 'Carlos Silva', email: 'carlos@test.cl' };
+    renderConRouter(<Cabecera cantidadTotal={0} usuarioActual={usuarioMock} />);
+    expect(screen.getByText('👤 Carlos')).toBeTruthy();
+  });
+
+  // PRUEBA 8: Lectura Correcta de la Fuente de Datos (CRUD - Read)
+  it('8. Debe retornar la lista inicial de productos desde la fuente de datos', () => {
+    const lista = obtenerProductos();
+    expect(lista.length).toBeGreaterThan(0);
+  });
+
+  // PRUEBA 9: Creación de un Nuevo Registro en la Fuente de Datos (CRUD - Create)
+  it('9. Debe agregar un nuevo producto mediante la función CRUD crearProducto', () => {
+    const nuevoProd = {
+      nombre: 'Cilindro Test 10kg',
+      categoria: 'Cilindros de Gas',
+      precio: 15000,
+      stock: 10,
+      descripcion: 'Producto de prueba'
+    };
+    const listaActualizada = crearProducto(nuevoProd);
+    const existe = listaActualizada.some((p) => p.nombre === 'Cilindro Test 10kg');
+    expect(existe).toBe(true);
+  });
+
+  // PRUEBA 10: Cambio entre Pestañas (Simulación de Interacción DOM)
+  it('10. Debe cambiar a la pestaña Crear Cuenta al hacer clic en Login', () => {
+    renderConRouter(
+      <Login iniciarSesion={() => {}} registrarUsuario={() => {}} usuarioActual={null} />
+    );
+    const btnCrearCuenta = screen.getByRole('button', { name: /Crear Cuenta/i });
+    fireEvent.click(btnCrearCuenta);
+    expect(screen.getByPlaceholderText('Juan Pérez')).toBeTruthy();
+  });
+
+});
