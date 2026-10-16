@@ -6,7 +6,7 @@ function PagPrincipal({ productos = [], agregarAlCarrito }) {
 
   return (
     <div className="contenedor-principal" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
-      {/* Banner Principal / Hero */}
+      {/* Banner Hero */}
       <section style={{
         background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
         border: '1px solid #e2e8f0',
@@ -33,8 +33,7 @@ function PagPrincipal({ productos = [], agregarAlCarrito }) {
             fontWeight: '700',
             fontSize: '1rem',
             textDecoration: 'none',
-            boxShadow: '0 4px 12px rgba(230, 81, 0, 0.25)',
-            transition: 'transform 0.2s ease, background-color 0.2s ease'
+            boxShadow: '0 4px 12px rgba(230, 81, 0, 0.25)'
           }}
         >
           Ver Catálogo Completo
@@ -56,6 +55,7 @@ function PagPrincipal({ productos = [], agregarAlCarrito }) {
             <div 
               key={prod.id} 
               style={{
+                position: 'relative',
                 background: '#ffffff',
                 border: '1px solid #e2e8f0',
                 borderRadius: '12px',
@@ -63,10 +63,28 @@ function PagPrincipal({ productos = [], agregarAlCarrito }) {
                 display: 'flex',
                 flexDirection: 'column',
                 justify: 'space-between',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)'
               }}
             >
+              {/* Etiqueta de Oferta */}
+              {prod.oferta && (
+                <span style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  backgroundColor: '#f97316',
+                  color: '#ffffff',
+                  fontSize: '0.75rem',
+                  fontWeight: '800',
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: '9999px',
+                  boxShadow: '0 2px 6px rgba(249, 115, 22, 0.3)',
+                  zIndex: 1
+                }}>
+                  🔥 {prod.descuento ? `${prod.descuento}% OFF` : 'En Oferta'}
+                </span>
+              )}
+
               <div>
                 <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                   <img 
@@ -76,17 +94,29 @@ function PagPrincipal({ productos = [], agregarAlCarrito }) {
                     onError={(e) => { e.target.onerror = null; e.target.src = '/assets/cilindro11kg.png'; }}
                   />
                 </div>
+
                 <h3 style={{ fontSize: '1.15rem', color: '#1e293b', fontWeight: '700', marginBottom: '0.5rem' }}>
                   {prod.nombre}
                 </h3>
+                
                 <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: '1.4', minHeight: '42px', marginBottom: '0.8rem' }}>
                   {prod.descripcion}
                 </p>
+
                 <p style={{ fontSize: '0.875rem', color: prod.stock > 0 ? '#15803d' : '#b91c1c', fontWeight: '600', marginBottom: '0.8rem' }}>
                   {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
                 </p>
-                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0f172a', marginBottom: '1.2rem' }}>
-                  ${prod.precio.toLocaleString('es-CL')}
+
+                {/* Precio Oferta / Normal */}
+                <div style={{ marginBottom: '1.2rem' }}>
+                  {prod.precioAnterior && (
+                    <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '0.95rem', marginRight: '8px' }}>
+                      ${prod.precioAnterior.toLocaleString('es-CL')}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '1.5rem', fontWeight: '800', color: prod.oferta ? '#e65100' : '#0f172a' }}>
+                    ${prod.precio.toLocaleString('es-CL')}
+                  </span>
                 </div>
               </div>
 
