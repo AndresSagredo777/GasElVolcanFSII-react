@@ -19,9 +19,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
 
   const [errores, setErrores] = useState({});
 
-  const subtotal = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-  const costoEnvio = subtotal > 0 ? 2000 : 0;
-  const total = subtotal + costoEnvio;
+  const { subtotal, costoEnvio, total } = calcularTotal(carrito);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,36 +29,20 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
     }
   };
 
-  const validarFormulario = () => {
-    const nuevosErrores = {};
-    if (!datosEnvio.nombre.trim() || datosEnvio.nombre.trim().length < 3) {
-      nuevosErrores.nombre = 'Ingresa un nombre completo válido.';
-    }
-    if (!datosEnvio.direccion.trim() || datosEnvio.direccion.trim().length < 5) {
-      nuevosErrores.direccion = 'Ingresa una dirección con número.';
-    }
-    if (!datosEnvio.comuna.trim()) {
-      nuevosErrores.comuna = 'Ingresa tu comuna.';
-    }
-    const regexTel = /^(\+?56)?9\d{8}$/;
-    if (!regexTel.test(datosEnvio.telefono.replace(/\s+/g, ''))) {
-      nuevosErrores.telefono = 'Teléfono inválido (ej: 912345678).';
-    }
-    setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
   const handleFinalizarCompra = (e) => {
     e.preventDefault();
 
-    if (!validarFormulario()) return;
+    const nuevosErrores = validarEnvio(datosEnvio);
+    setErrores(nuevosErrores);
+
+    if (!formularioValido(nuevosErrores)) return;
 
     descontarStock();
     setOrdenCompletada(true);
 
-    setTimeout(() => {
-      vaciarCarrito();
-    }, 1500);
+    descontarStock();
+    vaciarCarrito();
+    setOrdenCompletada(true);
   };
 
   if (carrito.length === 0 && !ordenCompletada) {
@@ -99,15 +81,15 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
       <div className="disposicion-carrito">
         <section className="lista-carrito">
           {carrito.map((item) => {
-            const prodStock = productos.find((p) => p.id === item.id)?.stock || item.stock;
+            const prodStock = obtenerStock(productos, item.id);
             return (
               <article className="item-carrito" key={item.id}>
-                <img src={item.img} alt={item.nombre} />
+                <img src={obtenerRutaImagen(item)} alt={item.nombre} />
                 
                 <div className="detalles-item">
                   <h3>{item.nombre}</h3>
                   <span className="precio-unitario">
-                    ${item.precio.toLocaleString('es-CL')} c/u
+                    {formatearPrecio(item.precio)} c/u
                   </span>
                   <br />
                   <small style={{ color: '#666' }}>Max. disponible: {prodStock} un.</small>
@@ -119,12 +101,12 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                     min="1" 
                     max={prodStock} 
                     value={item.cantidad} 
-                    onChange={(e) => cambiarCantidad(item.id, parseInt(e.target.value) || 1)}
+                    onChange={(e) => cambiarCantidad(item.id, e.target.value)}
                   />
                 </div>
 
                 <div className="subtotal-item">
-                  ${(item.precio * item.cantidad).toLocaleString('es-CL')}
+                  {formatearPrecio(item.precio * item.cantidad)}
                 </div>
 
                 <button 
@@ -143,17 +125,17 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
           
           <div className="fila-resumen">
             <span>Subtotal:</span>
-            <span>${subtotal.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(subtotal)}</span>
           </div>
 
           <div className="fila-resumen">
             <span>Despacho:</span>
-            <span>${costoEnvio.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(costoEnvio)}</span>
           </div>
 
           <div className="fila-resumen total">
             <span>Total:</span>
-            <span>${total.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(total)}</span>
           </div>
 
           <button className="boton btn-pagar" onClick={() => setMostrarModal(true)}>
@@ -246,7 +228,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                   Cancelar
                 </button>
                 <button type="submit" className="boton">
-                  Confirmar Pedido (${total.toLocaleString('es-CL')})
+                  Confirmar Pedido ({formatearPrecio(total)})
                 </button>
               </div>
             </form>
