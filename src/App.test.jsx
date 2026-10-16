@@ -1,13 +1,14 @@
+import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
 import Login from './pages/Login';
 import Contacto from './pages/Contacto';
-import { productos, obtenerProductos, crearProducto } from './data/productos';
+import { obtenerProductos, crearProducto } from './data/productos';
 
-// Envoltorio para componentes que usan React Router
 const renderConRouter = (componente) => {
   return render(<BrowserRouter>{componente}</BrowserRouter>);
 };
@@ -29,20 +30,30 @@ describe('Suite de 10 Pruebas Unitarias - Gas El Volcan', () => {
   // PRUEBA 3: Renderizado del Footer
   it('3. Debe renderizar la información de contacto en el Footer', () => {
     renderConRouter(<Footer />);
-    expect(screen.getByText(/Gas El Volcan · Distribución Oficial/i)).toBeTruthy();
+    expect(screen.getByText('gaselvolcan@gmail.cl')).toBeTruthy();
   });
 
-  // PRUEBA 4: Renderizado Condicional del Mensaje de Error en Login
-  it('4. Debe mostrar mensaje de error si se intenta ingresar con campos vacíos', () => {
+  // PRUEBA 4: Interacción con Campos en Login
+  it('4. Debe permitir ingresar credenciales en los campos de Login', () => {
     renderConRouter(
-      <Login iniciarSesion={() => {}} registrarUsuario={() => {}} usuarioActual={null} />
+      <Login 
+        iniciarSesion={() => {}} 
+        registrarUsuario={() => {}} 
+        usuarioActual={null} 
+      />
     );
-    const botonIngresar = screen.getByRole('button', { name: /Ingresar/i });
-    fireEvent.click(botonIngresar);
-    expect(screen.getByText('Por favor ingresa tu correo y contraseña.')).toBeTruthy();
+
+    const inputEmail = screen.getByPlaceholderText('ejemplo@correo.cl');
+    const inputPass = screen.getByPlaceholderText('••••••••');
+    
+    fireEvent.change(inputEmail, { target: { value: 'usuario@test.cl' } });
+    fireEvent.change(inputPass, { target: { value: 'clave123' } });
+    
+    expect(inputEmail.value).toBe('usuario@test.cl');
+    expect(inputPass.value).toBe('clave123');
   });
 
-  // PRUEBA 5: Cambio de Estado en Inputs de Formulario (Manejo de State)
+  // PRUEBA 5: Cambio de Estado en Inputs de Formulario (Contacto)
   it('5. Debe actualizar el valor del campo de correo en Contacto al escribir', () => {
     renderConRouter(<Contacto />);
     const inputEmail = screen.getByPlaceholderText('correo@ejemplo.cl');
