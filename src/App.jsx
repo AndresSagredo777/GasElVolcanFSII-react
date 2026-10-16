@@ -1,234 +1,227 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+// Importación de Estilos CSS
 import './App.css';
-import { Route, Routes } from "react-router-dom";
-import { productos as productosIniciales } from './data/productos';
+import './index.css';
+
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
+
 import PagPrincipal from './pages/PagPrincipal';
-import Nosotros from './pages/Nosotros';
-import Cobertura from './pages/Cobertura';
-import Cartelera from './pages/CarteleraProductos';
+import CarteleraProductos from './pages/CarteleraProductos';
+import DetalleProducto from './pages/DetalleProducto';
 import Carrito from './pages/Carrito';
 import Login from './pages/Login';
-import Error from './pages/NotFound404';
+import Contacto from './pages/Contacto';
+import PagoExitoso from './pages/PagoExitoso';
+import PagoError from './pages/PagoError';
+import AdminDashboard from './pages/AdminDashboard';
+import NotFound404 from './pages/NotFound404';
+import Blog from './pages/Blog';
+import Cobertura from './pages/Cobertura';
+import Nosotros from './pages/Nosotros';
+import Ofertas from './pages/Ofertas';
+
+import { productos as productosBase } from './data/productos';
 
 function App() {
-
   const [productos, setProductos] = useState(() => {
+    const guardados = localStorage.getItem('productosStock');
+    if (!guardados) return productosBase;
     try {
-      const guardado = localStorage.getItem('productosStock');
-      if (guardado) {
-        const parsed = JSON.parse(guardado);
-        if (parsed.length === productosIniciales.length) return parsed;
-      }
-      return productosIniciales;
+      const listaGuardada = JSON.parse(guardados);
+      return productosBase.map((base) => {
+        const guardado = listaGuardada.find((g) => g.id === base.id);
+        if (!guardado || guardado.stock === undefined || guardado.stock === null) {
+          return base;
+        }
+        return guardado;
+      });
     } catch {
-      return productosIniciales;
+      return productosBase;
     }
   });
-
 
   const [carrito, setCarrito] = useState(() => {
-    try {
-      const guardado = localStorage.getItem('carritoProductos');
-      return guardado ? JSON.parse(guardado) : [];
-    } catch {
-      return [];
-    }
-  });
-
-
-  const [usuarios, setUsuarios] = useState(() => {
-    try {
-      const guardados = localStorage.getItem('usuariosGas');
-      return guardados ? JSON.parse(guardados) : [];
-    } catch {
-      return [];
-    }
+    const guardados = localStorage.getItem('carrito');
+    return guardados ? JSON.parse(guardados) : [];
   });
 
   const [usuarioActual, setUsuarioActual] = useState(() => {
-    try {
-      const guardado = localStorage.getItem('usuarioActualGas');
-      return guardado ? JSON.parse(guardado) : null;
-    } catch {
-      return null;
-    }
+    const guardado = localStorage.getItem('usuarioActual');
+    return guardado ? JSON.parse(guardado) : null;
   });
 
+  const [usuarios, setUsuarios] = useState(() => {
+    const guardados = localStorage.getItem('usuarios');
+    return guardados ? JSON.parse(guardados) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('productosStock', JSON.stringify(productos));
   }, [productos]);
 
   useEffect(() => {
-    localStorage.setItem('carritoProductos', JSON.stringify(carrito));
+    localStorage.setItem('carrito', JSON.stringify(carrito));
   }, [carrito]);
 
   useEffect(() => {
-    localStorage.setItem('usuariosGas', JSON.stringify(usuarios));
-  }, [usuarios]);
-
-  useEffect(() => {
     if (usuarioActual) {
-      localStorage.setItem('usuarioActualGas', JSON.stringify(usuarioActual));
+      localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
     } else {
-      localStorage.removeItem('usuarioActualGas');
+      localStorage.removeItem('usuarioActual');
     }
   }, [usuarioActual]);
 
-  // Funciones de Autenticación
-  function registrarUsuario(nuevoUsuario) {
-    const existe = usuarios.some(u => u.email.toLowerCase() === nuevoUsuario.email.toLowerCase());
-    if (existe) {
-      return { exito: false, mensaje: 'El correo ya se encuentra registrado.' };
-    }
-    setUsuarios((prev) => [...prev, nuevoUsuario]);
-    setUsuarioActual(nuevoUsuario); // Inicia sesión automáticamente al registrarse
-    return { exito: true };
-  }
-
-  function iniciarSesion(email, password) {
-    const usuario = usuarios.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  const iniciarSesion = (email, password) => {
+    const usuarioEncontrado = usuarios.find(
+      (u) => u.email === email && u.password === password
     );
-    if (usuario) {
-      setUsuarioActual(usuario);
+    if (usuarioEncontrado) {
+      setUsuarioActual(usuarioEncontrado);
       return { exito: true };
     }
     return { exito: false, mensaje: 'Correo o contraseña incorrectos.' };
-  }
+  };
 
-  function cerrarSesion() {
+  const cerrarSesion = () => {
     setUsuarioActual(null);
-  }
+    localStorage.removeItem('usuarioActual');
+  };
 
-  // Funciones del Carrito
-  function agregarAlCarrito(producto) {
-    if (!producto) return;
-
-    const prodEnInventario = productos.find((p) => Number(p.id) === Number(producto.id));
-    const itemEnCarrito = carrito.find((item) => Number(item.id) === Number(producto.id));
-    const cantidadActual = itemEnCarrito ? itemEnCarrito.cantidad : 0;
-    const stockDisponible = prodEnInventario ? Number(prodEnInventario.stock) : 0;
-
-    if (stockDisponible <= 0) {
-      alert(`¡El producto ${producto.nombre} está agotado!`);
-      return;
+  const registrarUsuario = (nuevoUsuario) => {
+    const existe = usuarios.some((u) => u.email === nuevoUsuario.email);
+    if (existe) {
+      return { exito: false, mensaje: 'El correo ya se encuentra registrado.' };
     }
+    const listaActualizada = [...usuarios, nuevoUsuario];
+    setUsuarios(listaActualizada);
+    localStorage.setItem('usuarios', JSON.stringify(listaActualizada));
+    setUsuarioActual(nuevoUsuario);
+    return { exito: true };
+  };
 
-    if (cantidadActual + 1 > stockDisponible) {
-      alert(`Solo quedan ${stockDisponible} unidades disponibles de ${producto.nombre}.`);
-      return;
-    }
-
-    setCarrito((prevCarrito) => {
-      if (itemEnCarrito) {
-        return prevCarrito.map((item) =>
-          Number(item.id) === Number(producto.id)
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
+  const agregarAlCarrito = (producto) => {
+    setCarrito((prev) => {
+      const existe = prev.find((item) => item.id === producto.id);
+      const cantidadActual = existe ? existe.cantidad : 0;
+      if (cantidadActual + 1 > producto.stock) {
+        alert(`No puedes agregar más de ${producto.stock} unidades de este producto.`);
+        return prev;
+      }
+      if (existe) {
+        return prev.map((item) =>
+          item.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
         );
       }
-      return [
-        ...prevCarrito, 
-        { 
-          ...producto, 
-          cantidad: 1, 
-          stock: stockDisponible,
-          img: producto.imagen || producto.img 
-        }
-      ];
+      return [...prev, { ...producto, cantidad: 1 }];
     });
-  }
+  };
 
-  function cambiarCantidad(id, nuevaCantidad) {
-    const prodEnInventario = productos.find((p) => Number(p.id) === Number(id));
-    if (!prodEnInventario) return;
+  const cambiarCantidad = (id, cantidad) => {
+    const prod = productos.find((p) => p.id === id);
+    const maxStock = prod ? prod.stock : 999;
 
-    const stockMaximo = Number(prodEnInventario.stock);
-    let cantidadFinal = Number(nuevaCantidad) || 1;
+    let nuevaCantidad = cantidad;
+    if (nuevaCantidad > maxStock) {
+      alert(`La cantidad máxima disponible en stock es ${maxStock} unidades.`);
+      nuevaCantidad = maxStock;
+    }
 
-    if (cantidadFinal > stockMaximo) cantidadFinal = stockMaximo;
-
-    if (cantidadFinal <= 0) {
+    if (nuevaCantidad <= 0) {
       eliminarDelCarrito(id);
       return;
     }
 
     setCarrito((prev) =>
-      prev.map((item) =>
-        Number(item.id) === Number(id) ? { ...item, cantidad: cantidadFinal } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, cantidad: nuevaCantidad } : item))
     );
-  }
+  };
 
-  function eliminarDelCarrito(id) {
-    setCarrito((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
-  }
+  const eliminarDelCarrito = (id) => {
+    setCarrito((prev) => prev.filter((item) => item.id !== id));
+  };
 
-  function vaciarCarrito() {
+  const vaciarCarrito = () => {
     setCarrito([]);
-  }
+  };
 
-  function descontarStock() {
+  const descontarStock = () => {
     setProductos((prevProductos) =>
-      prevProductos.map((prod) => {
-        const itemComprado = carrito.find((item) => Number(item.id) === Number(prod.id));
-        if (itemComprado) {
-          const nuevoStock = Number(prod.stock) - Number(itemComprado.cantidad);
-          return { ...prod, stock: nuevoStock < 0 ? 0 : nuevoStock };
+      prevProductos.map((p) => {
+        const itemCarrito = carrito.find((item) => item.id === p.id);
+        if (itemCarrito) {
+          return { ...p, stock: Math.max(0, p.stock - itemCarrito.cantidad) };
         }
-        return prod;
+        return p;
       })
     );
-  }
+    vaciarCarrito();
+  };
+
+  const cantidadTotal = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
   return (
-    <>
+    <div className="app-container">
       <Cabecera 
-        cantidadTotal={carrito.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)} 
-        usuarioActual={usuarioActual}
-        cerrarSesion={cerrarSesion}
+        cantidadTotal={cantidadTotal} 
+        usuarioActual={usuarioActual} 
+        cerrarSesion={cerrarSesion} 
       />
-
-      <Routes>
-        <Route path="/" element={<PagPrincipal productos={productos} agregar={agregarAlCarrito} />} />
-        <Route 
-          path="/productos" 
-          element={<Cartelera productos={productos} agregar={agregarAlCarrito} />} 
-        />
-        <Route path="/nosotros" element={<Nosotros />} />
-        <Route path="/cobertura" element={<Cobertura />} />
-        <Route 
-          path="/login" 
-          element={
-            <Login 
-              iniciarSesion={iniciarSesion} 
-              registrarUsuario={registrarUsuario} 
-              usuarioActual={usuarioActual}
-            />
-          } 
-        />
-        <Route 
-          path="/carrito" 
-          element={
-            <Carrito 
-              carrito={carrito} 
-              productos={productos}
-              usuarioActual={usuarioActual}
-              cambiarCantidad={cambiarCantidad} 
-              eliminarDelCarrito={eliminarDelCarrito} 
-              vaciarCarrito={vaciarCarrito}
-              descontarStock={descontarStock}
-            />
-          } 
-        />
-        <Route path="*" element={<Error />} />
-      </Routes>
+      
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<PagPrincipal productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          <Route path="/productos" element={<CarteleraProductos productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          <Route path="/ofertas" element={<Ofertas productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          <Route path="/producto/:id" element={<DetalleProducto productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/cobertura" element={<Cobertura />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route
+            path="/login"
+            element={
+              <Login
+                iniciarSesion={iniciarSesion}
+                registrarUsuario={registrarUsuario}
+                usuarioActual={usuarioActual}
+              />
+            }
+          />
+          <Route
+            path="/carrito"
+            element={
+              <Carrito
+                carrito={carrito}
+                productos={productos}
+                usuarioActual={usuarioActual}
+                cambiarCantidad={cambiarCantidad}
+                eliminarDelCarrito={eliminarDelCarrito}
+                vaciarCarrito={vaciarCarrito}
+                descontarStock={descontarStock}
+              />
+            }
+          />
+          <Route path="/pago-exitoso" element={<PagoExitoso />} />
+          <Route path="/pago-error" element={<PagoError />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminDashboard
+                productos={productos}
+                setProductos={setProductos}
+                usuarios={usuarios}
+              />
+            }
+          />
+          <Route path="*" element={<NotFound404 />} />
+        </Routes>
+      </main>
 
       <Footer />
-    </>
+    </div>
   );
 }
 

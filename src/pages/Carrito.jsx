@@ -95,10 +95,21 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
       <div className="disposicion-carrito">
         <section className="lista-carrito">
           {carrito.map((item) => {
-            const prodStock = productos.find((p) => p.id === item.id)?.stock || item.stock;
+            const prodStock = productos.find((p) => p.id === item.id)?.stock ?? item.stock ?? 999;
+            
+            // Corrige la ruta de imagen soportando la propiedad 'imagen' o 'img'
+            const srcImg = item.imagen || item.img;
+            const rutaImagen = srcImg
+              ? (srcImg.startsWith('/') || srcImg.startsWith('http') ? srcImg : `/${srcImg}`)
+              : '/assets/cilindro11kg.png';
+
             return (
               <article className="item-carrito" key={item.id}>
-                <img src={item.img} alt={item.nombre} />
+                <img 
+                  src={rutaImagen} 
+                  alt={item.nombre} 
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/cilindro11kg.png'; }}
+                />
                 
                 <div className="detalles-item">
                   <h3>{item.nombre}</h3>
@@ -115,7 +126,16 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                     min="1" 
                     max={prodStock} 
                     value={item.cantidad} 
-                    onChange={(e) => cambiarCantidad(item.id, parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (isNaN(val) || val < 1) {
+                        cambiarCantidad(item.id, 1);
+                      } else if (val > prodStock) {
+                        cambiarCantidad(item.id, prodStock);
+                      } else {
+                        cambiarCantidad(item.id, val);
+                      }
+                    }}
                   />
                 </div>
 
