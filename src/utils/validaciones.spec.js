@@ -62,6 +62,15 @@ describe('validarRegistro', () => {
     const error = validarRegistro({ ...valido, confirmarPassword: 'otra' });
     expect(error).toContain('no coinciden');
   });
+
+  it('rechaza un nombre vacío o demasiado corto', () => {
+    expect(validarRegistro({ ...valido, nombre: '  ' })).toContain('nombre completo');
+    expect(validarRegistro({ ...valido, nombre: 'Al' })).toContain('nombre completo');
+  });
+
+  it('rechaza un correo con formato incorrecto', () => {
+    expect(validarRegistro({ ...valido, email: 'correo-invalido' })).toContain('correo electrónico válido');
+  });
 });
 
 describe('validarEnvio', () => {
