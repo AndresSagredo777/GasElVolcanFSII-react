@@ -61,6 +61,13 @@ describe('Suite de 10 Pruebas Unitarias - Gas El Volcan', () => {
     expect(inputEmail.value).toBe('cliente@test.cl');
   });
 
+  it('actualiza el asunto opcional del formulario de contacto', () => {
+    renderConRouter(<Contacto />);
+    const inputAsunto = screen.getByPlaceholderText('Consulta sobre reparto');
+    fireEvent.change(inputAsunto, { target: { value: 'Consulta de entrega' } });
+    expect(inputAsunto.value).toBe('Consulta de entrega');
+  });
+
   // PRUEBA 6: Simulación de Evento de Envío en Formulario
   it('6. Debe aclarar que el formulario de Contacto aún no envía mensajes', () => {
     renderConRouter(<Contacto />);
