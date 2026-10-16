@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { crearUsuario } from '../utils/usuarios';
+import { validarLogin, validarRegistro } from '../utils/validaciones';
 
 function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
   const navigate = useNavigate();
