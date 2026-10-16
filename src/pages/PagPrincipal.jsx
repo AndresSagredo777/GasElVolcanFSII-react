@@ -1,8 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import TarjetaProducto from '../components/TarjetaProducto';
+import { obtenerDestacados } from '../utils/funcionesProductos'
 
 function PagPrincipal({ productos = [], agregar }) {
-  const destacados = productos.slice(0, 4);
+  const destacados = obtenerDestacados(productos)
 
   return (
     <main className="contenedor-principal">
@@ -54,35 +55,9 @@ function PagPrincipal({ productos = [], agregar }) {
         </div>
 
         <div className="grilla-productos">
-          {destacados.map((prod) => {
-            // Asegura la ruta correcta de las imágenes de productos.js
-            const rutaImagen = prod.imagen 
-              ? (prod.imagen.startsWith('/') ? prod.imagen : `/${prod.imagen}`) 
-              : (prod.img || '/assets/cilindro11kg.png');
-
-            return (
-              <article className="Producto" key={prod.id}>
-                <img src={rutaImagen} alt={prod.nombre} />
-                <h3>{prod.nombre}</h3>
-                <p>{prod.descripcion || prod.desc}</p>
-                
-                <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#276749' : '#e53e3e', fontWeight: 'bold' }}>
-                  {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
-                </p>
-
-                <span className="precio">${prod.precio.toLocaleString('es-CL')}</span>
-                
-                <button 
-                  className="boton-añadir" 
-                  onClick={() => agregar(prod)}
-                  disabled={prod.stock === 0}
-                  style={prod.stock === 0 ? { backgroundColor: '#cbd5e1', cursor: 'not-allowed' } : {}}
-                >
-                  {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
-                </button>
-              </article>
-            );
-          })}
+          {destacados.map((producto) => (
+            <TarjetaProducto key={producto.id} producto={producto} onAgregar={agregar} />
+          ))}
         </div>
       </section>
 
