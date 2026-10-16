@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-
+import './App.css';
+import './index.css';
 import Cabecera from './components/Cabecera';
 import Footer from './components/Footer';
-
+import PagPrincipal from './pages/PagPrincipal';
 import CarteleraProductos from './pages/CarteleraProductos';
 import DetalleProducto from './pages/DetalleProducto';
 import Carrito from './pages/Carrito';
@@ -12,9 +13,17 @@ import Contacto from './pages/Contacto';
 import PagoExitoso from './pages/PagoExitoso';
 import PagoError from './pages/PagoError';
 import AdminDashboard from './pages/AdminDashboard';
-import Error from './pages/Error';
+import NotFound404 from './pages/NotFound404';
+import Blog from './pages/Blog';
+import Cobertura from './pages/Cobertura';
+import Nosotros from './pages/Nosotros';
+import Ofertas from './pages/Ofertas';
 
-import { productosIniciales } from './data/productos';
+import * as productosModule from './data/productos';
+
+const productosIniciales = productosModule.obtenerProductos 
+  ? productosModule.obtenerProductos() 
+  : (productosModule.productosIniciales || productosModule.productos || productosModule.default || []);
 
 function App() {
   const [productos, setProductos] = useState(() => {
@@ -127,9 +136,18 @@ function App() {
       
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<CarteleraProductos productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          <Route path="/" element={<PagPrincipal productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          
+          {/* Ruta Catálogo de Productos */}
+          <Route path="/productos" element={<CarteleraProductos productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
+          
+          {/* Resto de Rutas */}
           <Route path="/producto/:id" element={<DetalleProducto productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/cobertura" element={<Cobertura />} />
+          <Route path="/ofertas" element={<Ofertas />} />
+          <Route path="/blog" element={<Blog />} />
           <Route
             path="/login"
             element={
@@ -166,7 +184,7 @@ function App() {
               />
             }
           />
-          <Route path="*" element={<Error />} />
+          <Route path="*" element={<NotFound404 />} />
         </Routes>
       </main>
 
