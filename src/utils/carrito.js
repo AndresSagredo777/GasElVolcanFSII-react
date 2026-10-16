@@ -1,4 +1,4 @@
-import {obtenerStock} from "../data/productos"
+import {obtenerStock} from "./funcionesProductos"
 
 export const costo_envio = 2000;
 

@@ -1,5 +1,5 @@
 import { formatearPrecio } from '../utils/precio';
-import { describirStock, obtenerRutaImagen } from '../utils/productos';
+import { describirStock, obtenerRutaImagen } from '../utils/funcionesProductos';
 
 function TarjetaProducto({ producto, onAgregar }) {
   const hayStock = producto.stock > 0;

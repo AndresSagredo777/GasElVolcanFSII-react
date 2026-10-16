@@ -2,8 +2,8 @@ import {
   actualizarCantidad,
   agregarProducto,
   calcularCantidadTotal,
-  calcularResumen,
-  COSTO_ENVIO,
+  calcularTotal,
+  costo_envio,
   descontarStock,
   eliminarProducto,
   validarAgregar,
@@ -23,18 +23,18 @@ describe('calcularCantidadTotal', () => {
   });
 });
 
-describe('calcularResumen', () => {
+describe('calcularTotal', () => {
   it('calcula subtotal, despacho y total', () => {
     const carrito = [{ ...cilindro, cantidad: 2 }, { ...regulador, cantidad: 1 }];
-    expect(calcularResumen(carrito)).toEqual({
+    expect(calcularTotal(carrito)).toEqual({
       subtotal: 2500,
-      costoEnvio: COSTO_ENVIO,
-      total: 2500 + COSTO_ENVIO,
+      costoEnvio: costo_envio,
+      total: 2500 + costo_envio,
     });
   });
 
   it('no cobra despacho si el carrito está vacío', () => {
-    expect(calcularResumen([])).toEqual({ subtotal: 0, costoEnvio: 0, total: 0 });
+    expect(calcularTotal([])).toEqual({ subtotal: 0, costoEnvio: 0, total: 0 });
   });
 });
 
