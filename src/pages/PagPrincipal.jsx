@@ -1,101 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function PagPrincipal({ productos = [], agregar }) {
-  const destacados = productos.slice(0, 4);
+function PagPrincipal({ productos = [], agregarAlCarrito }) {
+  // Tomamos una selección de productos destacados para la portada
+  const productosDestacados = productos.slice(0, 4);
 
   return (
-    <main className="contenedor-principal">
-      <section className="hero-home">
-        <div className="contenido-hero">
-          <span className="insignia-hero">🔥 Distribuidor Oficial de Gas Licuado</span>
-          <h1>El Gas de tu Hogar, Rápido y en la Puerta</h1>
-          <p className="bajada-hero-home">
-            Reparto exprés de cilindros y accesorios en Puente Alto y la Región Metropolitana. 
-            Seguridad garantizada y atención los 7 días de la semana.
-          </p>
-          <div className="acciones-hero">
-            <Link to="/productos" className="boton btn-hero-primario">
-              Ver Catálogo Completo
-            </Link>
-            <a href="tel:999999999" className="boton btn-hero-secundario">
-              📞 Pedir por Teléfono
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="grilla-beneficios">
-        <article className="tarjeta-beneficio">
-          <div className="icono-beneficio">⚡</div>
-          <h3>Entrega Exprés</h3>
-          <p>Llegamos a tu domicilio en un tiempo promedio de 30 a 45 minutos.</p>
-        </article>
-
-        <article className="tarjeta-beneficio">
-          <div className="icono-beneficio">🛡️</div>
-          <h3>Cilindros Normados</h3>
-          <p>Garantía de sellado de fábrica y certificación SEC en cada entrega.</p>
-        </article>
-
-        <article className="tarjeta-beneficio">
-          <div className="icono-beneficio">💳</div>
-          <h3>Múltiples Pagos</h3>
-          <p>Paga con efectivo o tarjetas de débito/crédito al recibir tu pedido.</p>
-        </article>
+    <div className="contenedor-principal">
+      <section className="hero-section" style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: '#f5f5f5', borderRadius: '8px', marginBottom: '2rem' }}>
+        <h1>Bienvenido a Gas El Volcan</h1>
+        <p>Distribución rápida y segura de gas licuado y accesorios para tu hogar o negocio.</p>
+        <Link to="/productos" className="boton" style={{ display: 'inline-block', marginTop: '1rem', padding: '0.7rem 1.5rem', backgroundColor: '#e65100', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+          Ver Catálogo Completo
+        </Link>
       </section>
 
       <section className="seccion-destacados">
-        <div className="cabecera-seccion">
-          <h2>Productos Más Pedidos</h2>
-          <Link to="/productos" className="link-ver-mas">
-            Ver todo el catálogo →
-          </Link>
-        </div>
-
-        <div className="grilla-productos">
-          {destacados.map((prod) => {
-            // Asegura la ruta correcta de las imágenes de productos.js
-            const rutaImagen = prod.imagen 
-              ? (prod.imagen.startsWith('/') ? prod.imagen : `/${prod.imagen}`) 
-              : (prod.img || '/assets/cilindro11kg.png');
-
-            return (
-              <article className="Producto" key={prod.id}>
-                <img src={rutaImagen} alt={prod.nombre} />
+        <h2 style={{ marginBottom: '1.5rem' }}>Productos Destacados</h2>
+        <div className="grid-productos" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+          {productosDestacados.map((prod) => (
+            <div key={prod.id} className="tarjeta-producto" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1rem', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <img src={prod.imagen} alt={prod.nombre} style={{ width: '100%', height: '180px', objectFit: 'contain', marginBottom: '1rem' }} />
                 <h3>{prod.nombre}</h3>
-                <p>{prod.descripcion || prod.desc}</p>
-                
-                <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#276749' : '#e53e3e', fontWeight: 'bold' }}>
+                <p style={{ fontSize: '0.85rem', color: '#666', minHeight: '40px' }}>{prod.descripcion}</p>
+                <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#2e7d32' : '#c62828', fontWeight: 'bold' }}>
                   {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
                 </p>
+                <h4 style={{ fontSize: '1.3rem', color: '#1a237e', margin: '0.5rem 0' }}>
+                  ${prod.precio.toLocaleString('es-CL')}
+                </h4>
+              </div>
 
-                <span className="precio">${prod.precio.toLocaleString('es-CL')}</span>
-                
-                <button 
-                  className="boton-añadir" 
-                  onClick={() => agregar(prod)}
-                  disabled={prod.stock === 0}
-                  style={prod.stock === 0 ? { backgroundColor: '#cbd5e1', cursor: 'not-allowed' } : {}}
-                >
-                  {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
-                </button>
-              </article>
-            );
-          })}
+              <button
+                type="button"
+                onClick={() => agregarAlCarrito(prod)}
+                disabled={prod.stock <= 0}
+                style={{
+                  width: '100%',
+                  padding: '0.7rem',
+                  backgroundColor: prod.stock > 0 ? '#e65100' : '#ccc',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  cursor: prod.stock > 0 ? 'pointer' : 'not-allowed',
+                  marginTop: '1rem'
+                }}
+              >
+                {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
+              </button>
+            </div>
+          ))}
         </div>
       </section>
-
-      <section className="banner-cta-home">
-        <div className="texto-cta">
-          <h2>¿Se te acabó el gas en mitad de la cocina?</h2>
-          <p>Haz tu pedido online ahora mismo y te asignamos el repartidor más cercano.</p>
-        </div>
-        <Link to="/productos" className="boton btn-cta-solido">
-          Pide tu Cilindro Ahora
-        </Link>
-      </section>
-    </main>
+    </div>
   );
 }
 

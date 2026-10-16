@@ -29,13 +29,13 @@ body {
 /* ============================================================
    2. ESTRUCTURA Y FOOTER PEGAR AL FONDO (#root)
 ============================================================ */
-#root {
+#root, .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.contenedor-principal {
+.contenedor-principal, .main.content {
   flex: 1;
   width: 100%;
   max-width: 1200px;

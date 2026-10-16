@@ -19,16 +19,24 @@ import Cobertura from './pages/Cobertura';
 import Nosotros from './pages/Nosotros';
 import Ofertas from './pages/Ofertas';
 
-import * as productosModule from './data/productos';
-
-const productosIniciales = productosModule.obtenerProductos 
-  ? productosModule.obtenerProductos() 
-  : (productosModule.productosIniciales || productosModule.productos || productosModule.default || []);
+import { productos as productosBase } from './data/productos';
 
 function App() {
   const [productos, setProductos] = useState(() => {
-    const guardados = localStorage.getItem('productos');
-    return guardados ? JSON.parse(guardados) : productosIniciales;
+    const guardados = localStorage.getItem('productosStock');
+    if (!guardados) return productosBase;
+    try {
+      const listaGuardada = JSON.parse(guardados);
+      return productosBase.map((base) => {
+        const guardado = listaGuardada.find((g) => g.id === base.id);
+        if (!guardado || guardado.stock === undefined || guardado.stock === null) {
+          return base;
+        }
+        return guardado;
+      });
+    } catch {
+      return productosBase;
+    }
   });
 
   const [carrito, setCarrito] = useState(() => {
@@ -47,7 +55,7 @@ function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('productos', JSON.stringify(productos));
+    localStorage.setItem('productosStock', JSON.stringify(productos));
   }, [productos]);
 
   useEffect(() => {
@@ -88,6 +96,11 @@ function App() {
   const agregarAlCarrito = (producto) => {
     setCarrito((prev) => {
       const existe = prev.find((item) => item.id === producto.id);
+      const cantidadActual = existe ? existe.cantidad : 0;
+      if (cantidadActual + 1 > producto.stock) {
+        alert(`No puedes agregar más de ${producto.stock} unidades de este producto.`);
+        return prev;
+      }
       if (existe) {
         return prev.map((item) =>
           item.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item
@@ -98,12 +111,22 @@ function App() {
   };
 
   const cambiarCantidad = (id, cantidad) => {
-    if (cantidad <= 0) {
+    const prod = productos.find((p) => p.id === id);
+    const maxStock = prod ? prod.stock : 999;
+
+    let nuevaCantidad = cantidad;
+    if (nuevaCantidad > maxStock) {
+      alert(`La cantidad máxima disponible en stock es ${maxStock} unidades.`);
+      nuevaCantidad = maxStock;
+    }
+
+    if (nuevaCantidad <= 0) {
       eliminarDelCarrito(id);
       return;
     }
+
     setCarrito((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, cantidad } : item))
+      prev.map((item) => (item.id === id ? { ...item, cantidad: nuevaCantidad } : item))
     );
   };
 
@@ -137,16 +160,12 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<PagPrincipal productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
-          
-          {/* Ruta Catálogo de Productos */}
           <Route path="/productos" element={<CarteleraProductos productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
-          
-          {/* Resto de Rutas */}
+          <Route path="/ofertas" element={<Ofertas productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
           <Route path="/producto/:id" element={<DetalleProducto productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/cobertura" element={<Cobertura />} />
-          <Route path="/ofertas" element={<Ofertas />} />
           <Route path="/blog" element={<Blog />} />
           <Route
             path="/login"

@@ -1,68 +1,80 @@
 import React, { useState } from 'react';
 
-function CarteleraProductos({ productos, agregar }) {
-  const [categoriaSel, setCategoriaSel] = useState('todas');
+function CarteleraProductos({ productos = [], agregarAlCarrito }) {
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
 
-  const categorias = ['todas', ...new Set(productos.map(p => p.categoria))];
+  const categorias = ['Todas', 'Cilindros de Gas', 'Accesorios y Reguladores'];
 
-  const productosFiltrados = categoriaSel === 'todas'
+  const productosFiltrados = categoriaSeleccionada === 'Todas'
     ? productos
-    : productos.filter(p => p.categoria === categoriaSel);
+    : productos.filter((p) => p.categoria === categoriaSeleccionada);
 
   return (
-    <main className="contenedor-principal">
-      <h1>Catálogo de Productos</h1>
-      <p>Selecciona tus productos y añádelos a tu pedido.</p>
+    <div className="contenedor-principal">
+      <h2>Catálogo de Productos</h2>
+      <p style={{ color: '#666', marginBottom: '1.5rem' }}>Selecciona tus productos y añádelos a tu pedido.</p>
 
-      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '2rem' }}>
+      {/* Filtros por Categoría */}
+      <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
         {categorias.map((cat) => (
-          <button 
+          <button
             key={cat}
-            onClick={() => setCategoriaSel(cat)}
+            type="button"
+            onClick={() => setCategoriaSeleccionada(cat)}
             style={{
               padding: '0.5rem 1.2rem',
               borderRadius: '20px',
-              border: '1px solid var(--color-secundario)',
-              backgroundColor: categoriaSel === cat ? 'var(--color-primario)' : 'white',
-              color: categoriaSel === cat ? 'white' : 'var(--color-secundario)',
-              cursor: 'pointer',
+              border: '1px solid #e65100',
+              backgroundColor: categoriaSeleccionada === cat ? '#e65100' : '#fff',
+              color: categoriaSeleccionada === cat ? '#fff' : '#e65100',
               fontWeight: 'bold',
-              transition: 'all 0.2s ease'
+              cursor: 'pointer'
             }}
           >
-            {cat === 'todas' ? 'Todos los productos' : cat}
+            {cat === 'Todas' ? 'Todos los productos' : cat}
           </button>
         ))}
       </div>
 
-      <div className="grilla-productos">
-        {productosFiltrados.map((prod) => {
-          const rutaImagen = prod.imagen ? `/${prod.imagen}` : prod.img;
-          return (
-            <article className="Producto" key={prod.id}>
-              <img src={rutaImagen} alt={prod.nombre} />
+      {/* Lista de Tarjetas */}
+      <div className="grid-productos" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
+        {productosFiltrados.map((prod) => (
+          <div key={prod.id} className="tarjeta-producto" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1rem', background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <img src={prod.imagen} alt={prod.nombre} style={{ width: '100%', height: '180px', objectFit: 'contain', marginBottom: '1rem' }} />
               <h3>{prod.nombre}</h3>
-              <p>{prod.descripcion || prod.desc}</p>
-              
-              <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#276749' : '#e53e3e', fontWeight: 'bold' }}>
+              <p style={{ fontSize: '0.85rem', color: '#666', minHeight: '40px' }}>{prod.descripcion}</p>
+              <p style={{ fontSize: '0.85rem', color: prod.stock > 0 ? '#2e7d32' : '#c62828', fontWeight: 'bold' }}>
                 {prod.stock > 0 ? `Stock disponible: ${prod.stock} un.` : 'Agotado'}
               </p>
+              <h4 style={{ fontSize: '1.3rem', color: '#1a237e', margin: '0.5rem 0' }}>
+                ${prod.precio.toLocaleString('es-CL')}
+              </h4>
+            </div>
 
-              <span className="precio">${prod.precio.toLocaleString('es-CL')}</span>
-              
-              <button 
-                className="boton-añadir" 
-                onClick={() => agregar(prod)}
-                disabled={prod.stock === 0}
-                style={prod.stock === 0 ? { backgroundColor: '#cbd5e1', cursor: 'not-allowed' } : {}}
-              >
-                {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
-              </button>
-            </article>
-          );
-        })}
+            <button
+              type="button"
+              onClick={() => agregarAlCarrito(prod)}
+              disabled={prod.stock <= 0}
+              style={{
+                width: '100%',
+                padding: '0.7rem',
+                backgroundColor: prod.stock > 0 ? '#e65100' : '#ccc',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                fontWeight: 'bold',
+                cursor: prod.stock > 0 ? 'pointer' : 'not-allowed',
+                marginTop: '1rem'
+              }}
+            >
+              {prod.stock > 0 ? 'Añadir al pedido' : 'Sin Stock'}
+            </button>
+          </div>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }
+
 export default CarteleraProductos;
