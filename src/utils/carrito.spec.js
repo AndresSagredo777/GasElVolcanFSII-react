@@ -23,6 +23,13 @@ describe('calcularCantidadTotal', () => {
   });
 });
 
+it('acepta solo enteros positivos y no pasa del stock', () => {
+  const carrito = [{ ...cilindro, cantidad: 1 }];
+  expect(actualizarCantidad(carrito, 1, 99, 5)[0].cantidad).toBe(5);
+  expect(actualizarCantidad(carrito, 1, 2.7, 5)[0].cantidad).toBe(2);
+  expect(actualizarCantidad(carrito, 1, -3, 5)[0].cantidad).toBe(1);
+});
+
 describe('calcularTotal', () => {
   it('calcula subtotal, despacho y total', () => {
     const carrito = [{ ...cilindro, cantidad: 2 }, { ...regulador, cantidad: 1 }];

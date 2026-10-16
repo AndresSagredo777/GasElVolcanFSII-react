@@ -48,7 +48,8 @@ export function eliminarProducto(carrito, id) {
 }
 
 export function actualizarCantidad(carrito, id, nuevaCantidad, stock) {
-  const cantidad = Math.min(Number(nuevaCantidad) || 1, stock);
+  const entero = Math.floor(Number(nuevaCantidad));
+  const cantidad = Math.min(entero >= 1 ? entero : 1, stock);
 
   if (cantidad <= 0) return eliminarProducto(carrito, id);
 
