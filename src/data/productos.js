@@ -15,30 +15,3 @@ export const productos = [
   { id: 14, codigo: 'AC003', nombre: 'Detector de gas a batería', categoria: 'Accesorios y Reguladores', precio: 17000, precioAnterior: 19990, descuento: 15, stock: 8, oferta: true, imagen: 'assets/detectorgas.png', descripcion: 'Sensor electroquímico. Alarma sonora y visual ante fuga de gas GLP o metano.' }
 ];
 
-export function obtenerProductos() {
-  const guardados = localStorage.getItem('productosStock');
-  return guardados ? JSON.parse(guardados) : productos;
-}
-
-export function crearProducto(nuevoProd) {
-  const lista = obtenerProductos();
-  const idNuevo = lista.length > 0 ? Math.max(...lista.map(p => p.id)) + 1 : 1;
-  const productoCreado = { id: idNuevo, ...nuevoProd };
-  const nuevaLista = [...lista, productoCreado];
-  localStorage.setItem('productosStock', JSON.stringify(nuevaLista));
-  return nuevaLista;
-}
-
-export function actualizarProducto(id, datosActualizados) {
-  const lista = obtenerProductos();
-  const nuevaLista = lista.map(p => p.id === Number(id) ? { ...p, ...datosActualizados } : p);
-  localStorage.setItem('productosStock', JSON.stringify(nuevaLista));
-  return nuevaLista;
-}
-
-export function eliminarProducto(id) {
-  const lista = obtenerProductos();
-  const nuevaLista = lista.filter(p => p.id !== Number(id));
-  localStorage.setItem('productosStock', JSON.stringify(nuevaLista));
-  return nuevaLista;
-}

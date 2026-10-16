@@ -1,8 +1,8 @@
 // src/components/Navegacion.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-function Navegacion() {
+function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
   // Estado para controlar el menú hamburguesa en celulares
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -22,10 +22,13 @@ function Navegacion() {
       </Link>
 
       {/* Botón menú hamburguesa para versión móvil */}
-      <button 
+      <button
         className={`boton-menu ${menuAbierto ? 'activo' : ''}`} 
         onClick={toggleMenu}
         aria-label="Abrir o cerrar navegación"
+        aria-expanded={menuAbierto}
+        aria-controls="menu-principal"
+        type="button"
       >
         <span className="linea-menu"></span>
         <span className="linea-menu"></span>
@@ -34,7 +37,7 @@ function Navegacion() {
 
       {/* Lista de navegación */}
       <nav>
-        <ul className={`menu ${menuAbierto ? 'menu-abierto' : ''}`}>
+        <ul id="menu-principal" className={`menu ${menuAbierto ? 'menu-abierto' : ''}`}>
           <li>
             <NavLink to="/" onClick={cerrarMenu}>
               Inicio
@@ -54,6 +57,19 @@ function Navegacion() {
             <NavLink to="/cobertura" onClick={cerrarMenu}>
               Cobertura
             </NavLink>
+          </li>
+          <li><NavLink to="/ofertas" onClick={cerrarMenu}>Ofertas</NavLink></li>
+          <li><NavLink to="/blog" onClick={cerrarMenu}>Blog</NavLink></li>
+          <li><NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink></li>
+          <li><NavLink to="/carrito" onClick={cerrarMenu}>🛒 Carrito ({cantidadTotal})</NavLink></li>
+          <li>
+            {usuarioActual ? (
+              <button className="enlace-menu" type="button" onClick={() => { cerrarSesion?.(); cerrarMenu(); }}>
+                👤 {usuarioActual.nombre || usuarioActual.email || 'Usuario'} · Salir
+              </button>
+            ) : (
+              <NavLink to="/login" onClick={cerrarMenu}>🔑 Ingresar</NavLink>
+            )}
           </li>
         </ul>
       </nav>

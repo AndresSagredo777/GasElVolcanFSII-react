@@ -1,21 +1,23 @@
-import React from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { generarNumeroOrden } from '../utils/ordenes';
 
 function PagoExitoso() {
   const location = useLocation();
   const datos = location.state || {};
-  const nroOrden = datos.nroOrden || `#2026${Math.floor(1000 + Math.random() * 9000)}`;
+  const [nroOrdenNuevo] = useState(generarNumeroOrden);
+  const nroOrden = datos.nroOrden || nroOrdenNuevo;
 
   return (
     <main className="contenedor-principal">
       <div className="tarjeta-login" style={{ maxWidth: '650px', textAlign: 'center' }}>
         <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
         <span className="badge-estado" style={{ backgroundColor: '#c6f6d5', color: '#22543d' }}>
-          Código {nroOrden}
+          Código {nroOrden.replace(/^#/, '')}
         </span>
-        <h1 style={{ color: 'var(--color-secundario)', marginTop: '0.5rem' }}>¡Se ha realizado la compra!</h1>
+        <h1 style={{ color: 'var(--color-secundario)', marginTop: '0.5rem' }}>Pedido de demostración registrado</h1>
         <p style={{ color: '#4a5568', marginBottom: '1.5rem' }}>
-          Gracias por tu pedido. Tu solicitud de despacho ha sido ingresada correctamente.
+          Gracias por tu pedido. Esta versión no realiza cobros ni envía la solicitud a un sistema de despacho.
         </p>
 
         {datos.cliente && (
@@ -24,7 +26,7 @@ function PagoExitoso() {
             <p style={{ fontSize: '0.9rem', margin: '0.2rem 0' }}><strong>Cliente:</strong> {datos.cliente.nombre}</p>
             <p style={{ fontSize: '0.9rem', margin: '0.2rem 0' }}><strong>Dirección:</strong> {datos.cliente.direccion}, {datos.cliente.comuna}</p>
             <p style={{ fontSize: '0.9rem', margin: '0.2rem 0' }}><strong>Teléfono:</strong> {datos.cliente.telefono}</p>
-            <p style={{ fontSize: '0.9rem', margin: '0.2rem 0' }}><strong>Total Pagado:</strong> ${datos.total?.toLocaleString('es-CL')}</p>
+            <p style={{ fontSize: '0.9rem', margin: '0.2rem 0' }}><strong>Total referencial:</strong> ${datos.total?.toLocaleString('es-CL')}</p>
           </div>
         )}
 

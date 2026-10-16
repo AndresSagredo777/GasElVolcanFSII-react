@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { crearUsuario } from '../utils/usuarios';
+import { validarLogin, validarRegistro } from '../utils/validaciones';
 
 function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
   const navigate = useNavigate();
@@ -42,8 +44,11 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
 
   const handleSubmitLogin = (e) => {
     e.preventDefault();
-    if (!formLogin.email || !formLogin.password) {
-      setErrorGlobal('Por favor ingresa tu correo y contraseña.');
+    
+    const error = validarLogin(formLogin)
+    
+    if (error) {
+      setErrorGlobal(error);
       return;
     }
 
@@ -58,36 +63,14 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
   const handleSubmitRegistro = (e) => {
     e.preventDefault();
 
-    if (!formRegistro.nombre.trim() || formRegistro.nombre.length < 3) {
-      setErrorGlobal('Ingresa tu nombre completo.');
+    const error = validarRegistro(formRegistro);
+    
+    if (error) {
+      setErrorGlobal(error);
       return;
     }
 
-    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regexEmail.test(formRegistro.email)) {
-      setErrorGlobal('Ingresa un correo electrónico válido.');
-      return;
-    }
-
-    if (formRegistro.password.length < 6) {
-      setErrorGlobal('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
-
-    if (formRegistro.password !== formRegistro.confirmarPassword) {
-      setErrorGlobal('Las contraseñas no coinciden.');
-      return;
-    }
-
-    const nuevoUsuario = {
-      nombre: formRegistro.nombre,
-      email: formRegistro.email,
-      telefono: formRegistro.telefono,
-      direccion: formRegistro.direccion,
-      password: formRegistro.password
-    };
-
-    const resultado = registrarUsuario(nuevoUsuario);
+    const resultado = registrarUsuario(crearUsuario(formRegistro));
     if (resultado.exito) {
       navigate('/carrito');
     } else {
@@ -156,7 +139,6 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
             </button>
           </form>
         ) : (
-          /* Formulario Crear Cuenta */
           <form onSubmit={handleSubmitRegistro} className="form-login">
             <div className="grupo-campo">
               <label htmlFor="reg-nombre">Nombre Completo</label>

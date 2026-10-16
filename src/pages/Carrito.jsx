@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { calcularTotal } from '../utils/carrito';
+import { formatearPrecio } from '../utils/precio';
+import { obtenerRutaImagen, obtenerStock, usarImagenPorDefecto } from '../utils/funcionesProductos';
+import { formularioValido, validarEnvio } from '../utils/validaciones';
 
-function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock }) {
+function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock, totalPedido }) {
+  const navigate = useNavigate();
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [ordenCompletada, setOrdenCompletada] = useState(false);
 
   const [datosEnvio, setDatosEnvio] = useState({
     nombre: '',
@@ -15,9 +19,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
 
   const [errores, setErrores] = useState({});
 
-  const subtotal = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-  const costoEnvio = subtotal > 0 ? 2000 : 0;
-  const total = subtotal + costoEnvio;
+  const { subtotal, costoEnvio, total } = calcularTotal(carrito);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,62 +29,26 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
     }
   };
 
-  const validarFormulario = () => {
-    const nuevosErrores = {};
-    if (!datosEnvio.nombre.trim() || datosEnvio.nombre.trim().length < 3) {
-      nuevosErrores.nombre = 'Ingresa un nombre completo válido.';
-    }
-    if (!datosEnvio.direccion.trim() || datosEnvio.direccion.trim().length < 5) {
-      nuevosErrores.direccion = 'Ingresa una dirección con número.';
-    }
-    if (!datosEnvio.comuna.trim()) {
-      nuevosErrores.comuna = 'Ingresa tu comuna.';
-    }
-    const regexTel = /^(\+?56)?9\d{8}$/;
-    if (!regexTel.test(datosEnvio.telefono.replace(/\s+/g, ''))) {
-      nuevosErrores.telefono = 'Teléfono inválido (ej: 912345678).';
-    }
-    setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
   const handleFinalizarCompra = (e) => {
     e.preventDefault();
 
-    if (!validarFormulario()) return;
+    const nuevosErrores = validarEnvio(datosEnvio);
+    setErrores(nuevosErrores);
+
+    if (!formularioValido(nuevosErrores)) return;
 
     descontarStock();
-    setOrdenCompletada(true);
-
-    setTimeout(() => {
-      vaciarCarrito();
-    }, 1500);
+    vaciarCarrito();
+    navigate('/pago-exitoso', { state: { cliente: datosEnvio, total: totalPedido } });
   };
 
-  if (carrito.length === 0 && !ordenCompletada) {
+  if (carrito.length === 0) {
     return (
       <main className="contenedor-principal text-center py-5">
         <h1>Tu Carrito está vacío</h1>
         <p>Aún no has agregado productos a tu pedido.</p>
         <Link to="/productos" className="boton mt-3">
           Ver Catálogo
-        </Link>
-      </main>
-    );
-  }
-
-  if (ordenCompletada) {
-    return (
-      <main className="contenedor-principal text-center py-5">
-        <div className="aviso">
-          <h2>¡Pedido Confirmado con Éxito! 🎉</h2>
-          <p>
-            Gracias <strong>{datosEnvio.nombre}</strong>, tu pedido ha sido registrado para entrega en <strong>{datosEnvio.direccion}, {datosEnvio.comuna}</strong>.
-          </p>
-          <p>El stock ha sido actualizado en el sistema.</p>
-        </div>
-        <Link to="/" className="boton mt-3" onClick={() => setOrdenCompletada(false)}>
-          Volver al Inicio
         </Link>
       </main>
     );
@@ -95,52 +61,36 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
       <div className="disposicion-carrito">
         <section className="lista-carrito">
           {carrito.map((item) => {
-            const prodStock = productos.find((p) => p.id === item.id)?.stock ?? item.stock ?? 999;
-            
-            // Corrige la ruta de imagen soportando la propiedad 'imagen' o 'img'
-            const srcImg = item.imagen || item.img;
-            const rutaImagen = srcImg
-              ? (srcImg.startsWith('/') || srcImg.startsWith('http') ? srcImg : `/${srcImg}`)
-              : '/assets/cilindro11kg.png';
-
+            const prodStock = obtenerStock(productos, item.id);
             return (
               <article className="item-carrito" key={item.id}>
-                <img 
-                  src={rutaImagen} 
-                  alt={item.nombre} 
-                  onError={(e) => { e.target.onerror = null; e.target.src = '/assets/cilindro11kg.png'; }}
-                />
+                <img src={obtenerRutaImagen(item)} alt={item.nombre} onError={usarImagenPorDefecto} />
                 
                 <div className="detalles-item">
                   <h3>{item.nombre}</h3>
                   <span className="precio-unitario">
-                    ${item.precio.toLocaleString('es-CL')} c/u
+                    {formatearPrecio(item.precio)} c/u
                   </span>
                   <br />
                   <small style={{ color: '#666' }}>Max. disponible: {prodStock} un.</small>
                 </div>
 
                 <div className="controles-cantidad">
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max={prodStock} 
-                    value={item.cantidad} 
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (isNaN(val) || val < 1) {
-                        cambiarCantidad(item.id, 1);
-                      } else if (val > prodStock) {
-                        cambiarCantidad(item.id, prodStock);
-                      } else {
-                        cambiarCantidad(item.id, val);
-                      }
+                  <input
+                    type="number"
+                    min="1"
+                    max={prodStock}
+                    step="1"
+                    onKeyDown={(e) => {
+                      if (['.', ',', '-', '+', 'e'].includes(e.key)) e.preventDefault();
                     }}
+                    value={item.cantidad}
+                    onChange={(e) => cambiarCantidad(item.id, e.target.value)}
                   />
                 </div>
 
                 <div className="subtotal-item">
-                  ${(item.precio * item.cantidad).toLocaleString('es-CL')}
+                  {formatearPrecio(item.precio * item.cantidad)}
                 </div>
 
                 <button 
@@ -159,17 +109,17 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
           
           <div className="fila-resumen">
             <span>Subtotal:</span>
-            <span>${subtotal.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(subtotal)}</span>
           </div>
 
           <div className="fila-resumen">
             <span>Despacho:</span>
-            <span>${costoEnvio.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(costoEnvio)}</span>
           </div>
 
           <div className="fila-resumen total">
             <span>Total:</span>
-            <span>${total.toLocaleString('es-CL')}</span>
+            <span>{formatearPrecio(total)}</span>
           </div>
 
           <button className="boton btn-pagar" onClick={() => setMostrarModal(true)}>
@@ -183,7 +133,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
           <div className="contenido-modal">
             <div className="cabecera-modal">
               <h2>Confirmación de Despacho</h2>
-              <span className="badge-seguro">🔒 Pago Seguro</span>
+              <span className="badge-seguro">Pedido de demostración</span>
             </div>
 
             <form id="form-pasarela" onSubmit={handleFinalizarCompra} noValidate>
@@ -262,7 +212,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                   Cancelar
                 </button>
                 <button type="submit" className="boton">
-                  Confirmar Pedido (${total.toLocaleString('es-CL')})
+                  Confirmar Pedido ({formatearPrecio(total)})
                 </button>
               </div>
             </form>

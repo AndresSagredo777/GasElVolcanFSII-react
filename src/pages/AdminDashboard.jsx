@@ -1,10 +1,6 @@
-import React, { useState } from 'react';
-import { 
-  obtenerProductos, 
-  crearProducto, 
-  actualizarProducto, 
-  eliminarProducto 
-} from '../data/productos';
+import { useState } from 'react';
+import { borrarProducto, contarCategorias, crearProducto, editarProducto, normalizarProducto, obtenerRutaImagen, obtenerStockCritico, usarImagenPorDefecto } from '../utils/funcionesProductos';
+import { formatearPrecio } from '../utils/precio';
 
 function AdminDashboard({ productos, setProductos, usuarios = [] }) {
   const [pestana, setPestana] = useState('dashboard'); // 'dashboard', 'productos', 'ordenes', 'usuarios'
@@ -22,9 +18,9 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
   });
 
   const totalProductos = productos.length;
-  const productosCriticos = productos.filter((p) => Number(p.stock) <= 5);
+  const productosCriticos = obtenerStockCritico(productos);
   const totalUsuarios = usuarios.length;
-  const totalCategorias = [...new Set(productos.map((p) => p.categoria))].length;
+  const totalCategorias = contarCategorias(productos);
 
   const handleNuevo = () => {
     setModoEdicion(null);
@@ -56,24 +52,19 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
 
   const handleEliminar = (id) => {
     if (window.confirm('¿Estás seguro de eliminar este producto del inventario?')) {
-      const nuevaLista = eliminarProducto(id);
-      setProductos(nuevaLista);
+      setProductos((actuales) => borrarProducto(actuales, id));
     }
   };
 
   const handleGuardar = (e) => {
     e.preventDefault();
-    const datosNormalizados = {
-      ...formProducto,
-      precio: Number(formProducto.precio),
-      stock: Number(formProducto.stock)
-    };
+    const datosNormalizados = normalizarProducto(formProducto);
 
     let nuevaLista;
     if (modoEdicion) {
-      nuevaLista = actualizarProducto(modoEdicion, datosNormalizados);
+      nuevaLista = editarProducto(productos, modoEdicion, datosNormalizados);
     } else {
-      nuevaLista = crearProducto(datosNormalizados);
+      nuevaLista = crearProducto(productos, datosNormalizados);
     }
 
     setProductos(nuevaLista);
@@ -202,16 +193,16 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
             </thead>
             <tbody>
               {productos.map((prod) => {
-                const rutaImg = prod.imagen ? (prod.imagen.startsWith('/') ? prod.imagen : `/${prod.imagen}`) : '/assets/cilindro11kg.png';
+                const rutaImg = obtenerRutaImagen(prod);
                 return (
                   <tr key={prod.id} style={{ borderBottom: '1px solid #edf2f7' }}>
                     <td style={{ padding: '0.8rem' }}>#{prod.id}</td>
                     <td style={{ padding: '0.8rem' }}>
-                      <img src={rutaImg} alt={prod.nombre} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                      <img src={rutaImg} alt={prod.nombre} onError={usarImagenPorDefecto} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                     </td>
                     <td style={{ padding: '0.8rem', fontWeight: 'bold', color: 'var(--color-secundario)' }}>{prod.nombre}</td>
                     <td style={{ padding: '0.8rem' }}>{prod.categoria}</td>
-                    <td style={{ padding: '0.8rem', fontWeight: 'bold' }}>${prod.precio.toLocaleString('es-CL')}</td>
+                    <td style={{ padding: '0.8rem', fontWeight: 'bold' }}>{formatearPrecio(prod.precio)}</td>
                     <td style={{ padding: '0.8rem', color: prod.stock <= 5 ? '#e53e3e' : '#276749', fontWeight: 'bold' }}>
                       {prod.stock} un.
                     </td>
@@ -241,9 +232,9 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
       {pestana === 'ordenes' && (
         <section className="tarjeta-login" style={{ maxWidth: '100%' }}>
           <h2>Registro de Órdenes y Ventas</h2>
-          <p style={{ color: '#64748b' }}>Las ventas generadas desde el Checkout de la tienda se consolidan automáticamente en el historial administrativo.</p>
+          <p style={{ color: '#64748b' }}>Este prototipo todavía no guarda órdenes ni ventas en un servicio conectado.</p>
           <div style={{ backgroundColor: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '1rem', textAlign: 'center' }}>
-            <p><strong>Estado del Conector de Ventas:</strong> En línea y activo.</p>
+            <p><strong>Registro de ventas:</strong> No disponible en esta demostración.</p>
           </div>
         </section>
       )}

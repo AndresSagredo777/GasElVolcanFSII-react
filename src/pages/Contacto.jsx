@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function Contacto() {
   const [form, setForm] = useState({ nombre: '', email: '', asunto: '', mensaje: '' });
@@ -22,7 +22,7 @@ function Contacto() {
 
         {enviado && (
           <div className="alerta-error" style={{ backgroundColor: '#c6f6d5', color: '#22543d', borderLeftColor: '#38a169' }}>
-            ¡Mensaje enviado con éxito! Te responderemos a la brevedad.
+            El formulario se validó en esta demostración, pero el mensaje no se envió. Aún no hay un servicio de contacto conectado.
           </div>
         )}
 
@@ -72,7 +72,7 @@ function Contacto() {
           </div>
 
           <button type="submit" className="boton btn-login-submit">
-            Enviar Mensaje
+            Validar Formulario
           </button>
         </form>
       </div>
