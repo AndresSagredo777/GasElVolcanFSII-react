@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { calcularTotal } from '../utils/carrito';
 import { formatearPrecio } from '../utils/precio';
-import { obtenerRutaImagen, obtenerStock } from '../utils/funcionesProductos';
+import { obtenerRutaImagen, obtenerStock, usarImagenPorDefecto } from '../utils/funcionesProductos';
 import { formularioValido, validarEnvio } from '../utils/validaciones';
 
-function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock }) {
+function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock, totalPedido }) {
+  const navigate = useNavigate();
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [ordenCompletada, setOrdenCompletada] = useState(false);
 
   const [datosEnvio, setDatosEnvio] = useState({
     nombre: '',
@@ -38,37 +38,17 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
     if (!formularioValido(nuevosErrores)) return;
 
     descontarStock();
-    setOrdenCompletada(true);
-
-    descontarStock();
     vaciarCarrito();
-    setOrdenCompletada(true);
+    navigate('/pago-exitoso', { state: { cliente: datosEnvio, total: totalPedido } });
   };
 
-  if (carrito.length === 0 && !ordenCompletada) {
+  if (carrito.length === 0) {
     return (
       <main className="contenedor-principal text-center py-5">
         <h1>Tu Carrito está vacío</h1>
         <p>Aún no has agregado productos a tu pedido.</p>
         <Link to="/productos" className="boton mt-3">
           Ver Catálogo
-        </Link>
-      </main>
-    );
-  }
-
-  if (ordenCompletada) {
-    return (
-      <main className="contenedor-principal text-center py-5">
-        <div className="aviso">
-          <h2>¡Pedido Confirmado con Éxito! 🎉</h2>
-          <p>
-            Gracias <strong>{datosEnvio.nombre}</strong>, tu pedido ha sido registrado para entrega en <strong>{datosEnvio.direccion}, {datosEnvio.comuna}</strong>.
-          </p>
-          <p>El stock ha sido actualizado en el sistema.</p>
-        </div>
-        <Link to="/" className="boton mt-3" onClick={() => setOrdenCompletada(false)}>
-          Volver al Inicio
         </Link>
       </main>
     );
@@ -84,7 +64,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
             const prodStock = obtenerStock(productos, item.id);
             return (
               <article className="item-carrito" key={item.id}>
-                <img src={obtenerRutaImagen(item)} alt={item.nombre} />
+                <img src={obtenerRutaImagen(item)} alt={item.nombre} onError={usarImagenPorDefecto} />
                 
                 <div className="detalles-item">
                   <h3>{item.nombre}</h3>
@@ -153,7 +133,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
           <div className="contenido-modal">
             <div className="cabecera-modal">
               <h2>Confirmación de Despacho</h2>
-              <span className="badge-seguro">🔒 Pago Seguro</span>
+              <span className="badge-seguro">Pedido de demostración</span>
             </div>
 
             <form id="form-pasarela" onSubmit={handleFinalizarCompra} noValidate>

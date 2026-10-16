@@ -70,7 +70,7 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
       return;
     }
 
-    const resultado = registrarUsuario(crearUsuario(nuevoUsuario));
+    const resultado = registrarUsuario(crearUsuario(formRegistro));
     if (resultado.exito) {
       navigate('/carrito');
     } else {

@@ -1,5 +1,5 @@
 // src/components/Navegacion.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 function Navegacion() {

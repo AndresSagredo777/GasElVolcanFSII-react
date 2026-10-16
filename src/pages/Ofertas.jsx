@@ -1,5 +1,5 @@
 import TarjetaProducto from '../components/TarjetaProducto';
-import { filtrarOfertas } from '../utils/productos';
+import { filtrarOfertas } from '../utils/funcionesProductos';
 
 function Ofertas({ productos = [], agregarAlCarrito }) {
   const productosEnOferta = filtrarOfertas(productos);
