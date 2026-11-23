@@ -1,11 +1,33 @@
 import { useState } from 'react';
-import { borrarProducto, contarCategorias, crearProducto, editarProducto, normalizarProducto, obtenerRutaImagen, obtenerStockCritico, usarImagenPorDefecto } from '../utils/funcionesProductos';
+import {
+  borrarProducto,
+  contarCategorias,
+  crearProducto,
+  editarProducto,
+  normalizarProducto,
+  obtenerRutaImagen,
+  obtenerStockCritico,
+  usarImagenPorDefecto,
+} from '../utils/funcionesProductos';
 import { formatearPrecio } from '../utils/precio';
+import { obtenerRolUsuario } from '../utils/usuarios';
+import AdminOrdenes from '../components/admin/AdminOrdenes';
+import AdminCategorias from '../components/admin/AdminCategorias';
+import AdminReportes from '../components/admin/AdminReportes';
 
-function AdminDashboard({ productos, setProductos, usuarios = [] }) {
-  const [pestana, setPestana] = useState('dashboard'); // 'dashboard', 'productos', 'ordenes', 'usuarios'
-  const [modoEdicion, setModoEdicion] = useState(null); // id del producto en edición o null
+function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], usuarioActual = null }) {
+  const rol = obtenerRolUsuario(usuarioActual);
+  const esVendedor = rol === 'vendedor';
+
+  const [pestana, setPestana] = useState(esVendedor ? 'productos' : 'dashboard');
+  const [modoEdicion, setModoEdicion] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [productoDetalle, setProductoDetalle] = useState(null);
+  const [categoriasExtra, setCategoriasExtra] = useState([]);
+
+  const categoriasDisponibles = [
+    ...new Set([...productos.map((p) => p.categoria), ...categoriasExtra]),
+  ];
 
   const [formProducto, setFormProducto] = useState({
     nombre: '',
@@ -14,24 +36,30 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
     stock: '',
     oferta: false,
     imagen: 'assets/cilindro11kg.png',
-    descripcion: ''
+    descripcion: '',
   });
 
   const totalProductos = productos.length;
   const productosCriticos = obtenerStockCritico(productos);
   const totalUsuarios = usuarios.length;
-  const totalCategorias = contarCategorias(productos);
+  const totalCategorias = categoriasDisponibles.length || contarCategorias(productos);
+
+  const handleAgregarCategoria = (nombreCat) => {
+    if (!categoriasDisponibles.some((c) => c.toLowerCase() === nombreCat.toLowerCase())) {
+      setCategoriasExtra((prev) => [...prev, nombreCat]);
+    }
+  };
 
   const handleNuevo = () => {
     setModoEdicion(null);
     setFormProducto({
       nombre: '',
-      categoria: 'Cilindros de Gas',
+      categoria: categoriasDisponibles[0] || 'Cilindros de Gas',
       precio: '',
       stock: '',
       oferta: false,
       imagen: 'assets/cilindro11kg.png',
-      descripcion: ''
+      descripcion: '',
     });
     setMostrarModal(true);
   };
@@ -45,7 +73,7 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
       stock: prod.stock,
       oferta: prod.oferta || false,
       imagen: prod.imagen || 'assets/cilindro11kg.png',
-      descripcion: prod.descripcion || ''
+      descripcion: prod.descripcion || '',
     });
     setMostrarModal(true);
   };
@@ -60,12 +88,9 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
     e.preventDefault();
     const datosNormalizados = normalizarProducto(formProducto);
 
-    let nuevaLista;
-    if (modoEdicion) {
-      nuevaLista = editarProducto(productos, modoEdicion, datosNormalizados);
-    } else {
-      nuevaLista = crearProducto(productos, datosNormalizados);
-    }
+    const nuevaLista = modoEdicion
+      ? editarProducto(productos, modoEdicion, datosNormalizados)
+      : crearProducto(productos, datosNormalizados);
 
     setProductos(nuevaLista);
     setMostrarModal(false);
@@ -76,23 +101,29 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <span className="badge-estado" style={{ backgroundColor: '#edf2f7', color: 'var(--color-secundario)' }}>
-            ⚙️ Módulo Administrativo
+            {esVendedor ? '📋 Módulo de Vendedor' : '⚙️ Módulo Administrativo'}
           </span>
-          <h1 style={{ color: 'var(--color-secundario)', margin: '0.3rem 0 0 0' }}>Panel de Control (Dashboard)</h1>
+          <h1 style={{ color: 'var(--color-secundario)', margin: '0.3rem 0 0 0' }}>
+            {esVendedor ? 'Consulta de Productos y Órdenes' : 'Panel de Control (Dashboard)'}
+          </h1>
         </div>
 
-        <button className="boton" onClick={handleNuevo}>
-          ➕ Agregar Nuevo Producto
-        </button>
+        {!esVendedor && (
+          <button className="boton" onClick={handleNuevo}>
+            ➕ Agregar Nuevo Producto
+          </button>
+        )}
       </div>
 
-      <div className="pestanas-login" style={{ marginBottom: '2rem' }}>
-        <button
-          className={`btn-pestana ${pestana === 'dashboard' ? 'activa' : ''}`}
-          onClick={() => setPestana('dashboard')}
-        >
-          📊 Métrica y Resumen
-        </button>
+      <div className="pestanas-login" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
+        {!esVendedor && (
+          <button
+            className={`btn-pestana ${pestana === 'dashboard' ? 'activa' : ''}`}
+            onClick={() => setPestana('dashboard')}
+          >
+            📊 Métrica y Resumen
+          </button>
+        )}
         <button
           className={`btn-pestana ${pestana === 'productos' ? 'activa' : ''}`}
           onClick={() => setPestana('productos')}
@@ -103,17 +134,33 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
           className={`btn-pestana ${pestana === 'ordenes' ? 'activa' : ''}`}
           onClick={() => setPestana('ordenes')}
         >
-          📜 Boletas / Órdenes
+          📜 Boletas / Órdenes ({ordenes.length})
         </button>
-        <button
-          className={`btn-pestana ${pestana === 'usuarios' ? 'activa' : ''}`}
-          onClick={() => setPestana('usuarios')}
-        >
-          👥 Usuarios ({totalUsuarios})
-        </button>
+        {!esVendedor && (
+          <>
+            <button
+              className={`btn-pestana ${pestana === 'categorias' ? 'activa' : ''}`}
+              onClick={() => setPestana('categorias')}
+            >
+              🏷️ Categorías ({totalCategorias})
+            </button>
+            <button
+              className={`btn-pestana ${pestana === 'usuarios' ? 'activa' : ''}`}
+              onClick={() => setPestana('usuarios')}
+            >
+              👥 Usuarios ({totalUsuarios})
+            </button>
+            <button
+              className={`btn-pestana ${pestana === 'reportes' ? 'activa' : ''}`}
+              onClick={() => setPestana('reportes')}
+            >
+              📈 Reportes
+            </button>
+          </>
+        )}
       </div>
 
-      {pestana === 'dashboard' && (
+      {!esVendedor && pestana === 'dashboard' && (
         <section>
           <div className="barras-metricas" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             <div className="bloque-metrica" style={{ borderLeft: '4px solid var(--color-secundario)' }}>
@@ -130,7 +177,7 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
             </div>
             <div className="bloque-metrica" style={{ borderLeft: '4px solid #38a169' }}>
               <span className="numero-metrica" style={{ color: '#38a169' }}>{totalUsuarios}</span>
-              <span className="label-metrica">Clientes Registrados</span>
+              <span className="label-metrica">Usuarios Registrados</span>
             </div>
           </div>
 
@@ -207,19 +254,32 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
                       {prod.stock} un.
                     </td>
                     <td style={{ padding: '0.8rem' }}>{prod.oferta ? '🔥 Sí' : 'No'}</td>
-                    <td style={{ padding: '0.8rem', textAlign: 'center' }}>
-                      <button 
-                        onClick={() => handleEditar(prod)} 
-                        style={{ background: '#e2e8f0', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', marginRight: '0.5rem', fontWeight: 'bold' }}
+                    <td style={{ padding: '0.8rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setProductoDetalle(prod)}
+                        style={{ background: '#edf2f7', border: 'none', padding: '0.4rem 0.75rem', borderRadius: '4px', cursor: 'pointer', marginRight: '0.4rem', fontWeight: 'bold' }}
                       >
-                        ✏️ Editar
+                        👁️ Detalle
                       </button>
-                      <button 
-                        onClick={() => handleEliminar(prod.id)} 
-                        style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                      >
-                        🗑️ Eliminar
-                      </button>
+                      {!esVendedor && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleEditar(prod)}
+                            style={{ background: '#e2e8f0', border: 'none', padding: '0.4rem 0.75rem', borderRadius: '4px', cursor: 'pointer', marginRight: '0.4rem', fontWeight: 'bold' }}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEliminar(prod.id)}
+                            style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '0.4rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 );
@@ -229,27 +289,28 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
         </section>
       )}
 
-      {pestana === 'ordenes' && (
-        <section className="tarjeta-login" style={{ maxWidth: '100%' }}>
-          <h2>Registro de Órdenes y Ventas</h2>
-          <p style={{ color: '#64748b' }}>Este prototipo todavía no guarda órdenes ni ventas en un servicio conectado.</p>
-          <div style={{ backgroundColor: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '1rem', textAlign: 'center' }}>
-            <p><strong>Registro de ventas:</strong> No disponible en esta demostración.</p>
-          </div>
-        </section>
+      {pestana === 'ordenes' && <AdminOrdenes ordenes={ordenes} />}
+
+      {!esVendedor && pestana === 'categorias' && (
+        <AdminCategorias
+          productos={productos}
+          categorias={categoriasDisponibles}
+          onAgregarCategoria={handleAgregarCategoria}
+        />
       )}
 
-      {pestana === 'usuarios' && (
+      {!esVendedor && pestana === 'usuarios' && (
         <section style={{ background: '#fff', padding: '1.5rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-          <h2 style={{ color: 'var(--color-secundario)', marginBottom: '1rem' }}>Clientes Registrados ({totalUsuarios})</h2>
+          <h2 style={{ color: 'var(--color-secundario)', marginBottom: '1rem' }}>Usuarios Registrados ({totalUsuarios})</h2>
           {totalUsuarios === 0 ? (
-            <p style={{ color: '#64748b' }}>Aún no hay clientes registrados en el sistema.</p>
+            <p style={{ color: '#64748b' }}>Aún no hay usuarios registrados en el sistema.</p>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #e2e8f0', color: 'var(--color-secundario)' }}>
                   <th style={{ padding: '0.8rem' }}>Nombre</th>
                   <th style={{ padding: '0.8rem' }}>Correo Electrónico</th>
+                  <th style={{ padding: '0.8rem' }}>Rol</th>
                   <th style={{ padding: '0.8rem' }}>Teléfono</th>
                   <th style={{ padding: '0.8rem' }}>Dirección</th>
                 </tr>
@@ -259,6 +320,9 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
                   <tr key={idx} style={{ borderBottom: '1px solid #edf2f7' }}>
                     <td style={{ padding: '0.8rem', fontWeight: 'bold' }}>{u.nombre}</td>
                     <td style={{ padding: '0.8rem' }}>{u.email}</td>
+                    <td style={{ padding: '0.8rem' }}>
+                      <span className="badge-estado">{obtenerRolUsuario(u)}</span>
+                    </td>
                     <td style={{ padding: '0.8rem' }}>{u.telefono || 'Sin registro'}</td>
                     <td style={{ padding: '0.8rem' }}>{u.direccion || 'Sin registro'}</td>
                   </tr>
@@ -269,7 +333,36 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
         </section>
       )}
 
-      {mostrarModal && (
+      {!esVendedor && pestana === 'reportes' && (
+        <AdminReportes productos={productos} ordenes={ordenes} />
+      )}
+
+      {productoDetalle && (
+        <div className="modal-pago">
+          <div className="contenido-modal" style={{ maxWidth: '480px' }}>
+            <div className="cabecera-modal">
+              <h2>Detalle de Producto #{productoDetalle.id}</h2>
+              <button type="button" className="btn-eliminar" onClick={() => setProductoDetalle(null)}>✕</button>
+            </div>
+            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              <img
+                src={obtenerRutaImagen(productoDetalle)}
+                alt={productoDetalle.nombre}
+                onError={usarImagenPorDefecto}
+                style={{ maxHeight: '140px', objectFit: 'contain' }}
+              />
+            </div>
+            <p style={{ margin: '0.4rem 0' }}><strong>Nombre:</strong> {productoDetalle.nombre}</p>
+            <p style={{ margin: '0.4rem 0' }}><strong>Categoría:</strong> {productoDetalle.categoria}</p>
+            <p style={{ margin: '0.4rem 0' }}><strong>Precio:</strong> {formatearPrecio(productoDetalle.precio)}</p>
+            <p style={{ margin: '0.4rem 0' }}><strong>Stock:</strong> {productoDetalle.stock} un.</p>
+            <p style={{ margin: '0.4rem 0' }}><strong>Oferta:</strong> {productoDetalle.oferta ? 'Sí' : 'No'}</p>
+            <p style={{ margin: '0.4rem 0' }}><strong>Descripción:</strong> {productoDetalle.descripcion || 'Sin descripción'}</p>
+          </div>
+        </div>
+      )}
+
+      {!esVendedor && mostrarModal && (
         <div className="modal-pago">
           <div className="contenido-modal" style={{ maxWidth: '520px' }}>
             <div className="cabecera-modal">
@@ -297,8 +390,9 @@ function AdminDashboard({ productos, setProductos, usuarios = [] }) {
                     onChange={(e) => setFormProducto({ ...formProducto, categoria: e.target.value })}
                     style={{ padding: '0.7rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                   >
-                    <option value="Cilindros de Gas">Cilindros de Gas</option>
-                    <option value="Accesorios y Reguladores">Accesorios y Reguladores</option>
+                    {categoriasDisponibles.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
                 </div>
 

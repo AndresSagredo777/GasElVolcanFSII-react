@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it } from 'vitest';
 import CarteleraProductos from './CarteleraProductos';
 
 const productos = [
@@ -9,16 +10,23 @@ const productos = [
 
 describe('CarteleraProductos', () => {
   it('muestra todos los productos al inicio', () => {
-    render(<CarteleraProductos productos={productos} agregar={() => {}} />);
+    render(
+      <MemoryRouter>
+        <CarteleraProductos productos={productos} agregarAlCarrito={() => {}} />
+      </MemoryRouter>
+    );
     expect(screen.getByText('Cilindro 5 kg')).toBeInTheDocument();
     expect(screen.getByText('Regulador')).toBeInTheDocument();
   });
 
-  it('el filtro por categoría cambia los resultados', async () => {
-    const usuario = userEvent.setup();
-    render(<CarteleraProductos productos={productos} agregar={() => {}} />);
+  it('el filtro por categoría cambia los resultados', () => {
+    render(
+      <MemoryRouter>
+        <CarteleraProductos productos={productos} agregarAlCarrito={() => {}} />
+      </MemoryRouter>
+    );
 
-    await usuario.click(screen.getByRole('button', { name: 'Accesorios' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Accesorios' }));
 
     expect(screen.getByText('Regulador')).toBeInTheDocument();
     expect(screen.queryByText('Cilindro 5 kg')).not.toBeInTheDocument();

@@ -3,6 +3,7 @@ export const claves = {
   carrito: "carritoProductos",
   usuarios: "usuariosGas",
   usuarioActual: "usuarioActualGas",
+  ordenes: "ordenesGas",
 };
 
 export function leerDatos(clave, valorPorDefecto) {
