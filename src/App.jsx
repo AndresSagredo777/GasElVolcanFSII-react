@@ -12,14 +12,17 @@ import DetalleProducto from './pages/DetalleProducto';
 import Ofertas from './pages/Ofertas';
 import Contacto from './pages/Contacto';
 import Blog from './pages/Blog';
+import DetalleBlog from './pages/DetalleBlog';
 import Carrito from './pages/Carrito';
 import PagoExitoso from './pages/PagoExitoso';
 import PagoError from './pages/PagoError';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
+import Perfil from './pages/Perfil';
 import NotFound404 from './pages/NotFound404';
 import { claves, leerDatos, guardarDatos, eliminarDatos } from './utils/persistencia';
 import { obtenerStock } from './utils/funcionesProductos';
+import { crearOrden } from './utils/ordenes';
 import {
   agregarProducto,
   actualizarCantidad,
@@ -29,14 +32,26 @@ import {
   eliminarProducto,
   validarAgregar,
 } from './utils/carrito';
-import { buscarUsuario, registrarNuevoUsuario } from './utils/usuarios';
+import {
+  buscarUsuario,
+  obtenerRolUsuario,
+  registrarNuevoUsuario,
+  usuariosDemo,
+} from './utils/usuarios';
 
 function App() {
   const [productos, setProductos] = useState(() =>
     leerDatos(claves.productos, productosIniciales)
   );
   const [carrito, setCarrito] = useState(() => leerDatos(claves.carrito, []));
-  const [usuarios, setUsuarios] = useState(() => leerDatos(claves.usuarios, []));
+  const [ordenes, setOrdenes] = useState(() => leerDatos(claves.ordenes, []));
+  const [usuarios, setUsuarios] = useState(() => {
+    const guardados = leerDatos(claves.usuarios, []);
+    const extras = guardados.filter(
+      (g) => !usuariosDemo.some((d) => d.email.toLowerCase() === g.email?.toLowerCase())
+    );
+    return [...usuariosDemo, ...extras];
+  });
   const [usuarioActual, setUsuarioActual] = useState(() =>
     leerDatos(claves.usuarioActual, null)
   );
@@ -48,6 +63,10 @@ function App() {
   useEffect(() => {
     guardarDatos(claves.carrito, carrito);
   }, [carrito]);
+
+  useEffect(() => {
+    guardarDatos(claves.ordenes, ordenes);
+  }, [ordenes]);
 
   useEffect(() => {
     const usuariosPublicos = usuarios.map((usuario) => {
@@ -69,10 +88,11 @@ function App() {
   }, [usuarioActual]);
 
   function registrarUsuario(nuevoUsuario) {
-    const resultado = registrarNuevoUsuario(usuarios, nuevoUsuario);
+    const usuarioConRol = { ...nuevoUsuario, rol: 'cliente' };
+    const resultado = registrarNuevoUsuario(usuarios, usuarioConRol);
     if (resultado.exito) {
       setUsuarios(resultado.usuarios);
-      setUsuarioActual(nuevoUsuario);
+      setUsuarioActual(usuarioConRol);
     }
     return resultado;
   }
@@ -88,6 +108,12 @@ function App() {
 
   function cerrarSesion() {
     setUsuarioActual(null);
+  }
+
+  function registrarOrden(datosOrden) {
+    const nuevaOrden = crearOrden(datosOrden);
+    setOrdenes((actuales) => [nuevaOrden, ...actuales]);
+    return nuevaOrden;
   }
 
   function agregarAlCarrito(producto) {
@@ -117,6 +143,7 @@ function App() {
   }
 
   const { total: totalPedido } = calcularTotal(carrito);
+  const rolActual = obtenerRolUsuario(usuarioActual);
 
   return (
     <>
@@ -134,6 +161,7 @@ function App() {
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/cobertura" element={<Cobertura />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<DetalleBlog />} />
         <Route path="/contacto" element={<Contacto />} />
         <Route
           path="/login"
@@ -142,6 +170,16 @@ function App() {
               iniciarSesion={iniciarSesion}
               registrarUsuario={registrarUsuario}
               usuarioActual={usuarioActual}
+            />
+          }
+        />
+        <Route
+          path="/perfil"
+          element={
+            <Perfil
+              usuarioActual={usuarioActual}
+              ordenes={ordenes}
+              cerrarSesion={cerrarSesion}
             />
           }
         />
@@ -156,6 +194,8 @@ function App() {
               vaciarCarrito={vaciarCarrito}
               descontarStock={descontarStock}
               totalPedido={totalPedido}
+              usuarioActual={usuarioActual}
+              registrarOrden={registrarOrden}
             />
           }
         />
@@ -164,8 +204,14 @@ function App() {
         <Route
           path="/admin"
           element={
-            usuarioActual?.rol === 'admin' ? (
-              <AdminDashboard productos={productos} setProductos={setProductos} usuarios={usuarios} />
+            usuarioActual && (rolActual === 'admin' || rolActual === 'vendedor') ? (
+              <AdminDashboard
+                productos={productos}
+                setProductos={setProductos}
+                usuarios={usuarios}
+                ordenes={ordenes}
+                usuarioActual={usuarioActual}
+              />
             ) : (
               <Navigate to="/login" replace />
             )

@@ -2,6 +2,25 @@ function mismoEmail(a, b) {
   return a.toLowerCase() === b.toLowerCase();
 }
 
+export const usuariosDemo = [
+  {
+    nombre: 'Administrador Volcan',
+    email: 'admin@gaselvolcan.cl',
+    telefono: '911111111',
+    direccion: 'Central Puente Alto 100',
+    password: 'admin123',
+    rol: 'admin',
+  },
+  {
+    nombre: 'Vendedor Turno',
+    email: 'vendedor@gaselvolcan.cl',
+    telefono: '922222222',
+    direccion: 'Sucursal Puente Alto 200',
+    password: 'vendedor123',
+    rol: 'vendedor',
+  },
+];
+
 export function crearUsuario(formulario) {
   return {
     nombre: formulario.nombre,
@@ -27,4 +46,8 @@ export function buscarUsuario(usuarios, email, password) {
 
 export function obtenerPrimerNombre(usuario) {
   return usuario.nombre.split(" ")[0];
+}
+
+export function obtenerRolUsuario(usuario) {
+  return usuario?.rol || 'cliente';
 }
