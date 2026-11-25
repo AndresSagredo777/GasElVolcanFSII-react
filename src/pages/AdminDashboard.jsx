@@ -3,8 +3,8 @@ import { borrarProducto, contarCategorias, crearProducto, editarProducto, normal
 import { formatearPrecio } from '../utils/precio';
 
 function AdminDashboard({ productos, setProductos, usuarios = [] }) {
-  const [pestana, setPestana] = useState('dashboard'); // 'dashboard', 'productos', 'ordenes', 'usuarios'
-  const [modoEdicion, setModoEdicion] = useState(null); // id del producto en edición o null
+  const [pestana, setPestana] = useState('dashboard');
+  const [modoEdicion, setModoEdicion] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const [formProducto, setFormProducto] = useState({

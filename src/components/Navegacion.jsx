@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
-  // Estado para controlar el menú hamburguesa en celulares
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const toggleMenu = () => {
