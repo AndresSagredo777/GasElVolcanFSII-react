@@ -5,21 +5,43 @@ import { formatearPrecio } from '../utils/precio';
 import { obtenerRutaImagen, obtenerStock, usarImagenPorDefecto } from '../utils/funcionesProductos';
 import { formularioValido, validarEnvio } from '../utils/validaciones';
 
-function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaciarCarrito, descontarStock, totalPedido }) {
+function Carrito({
+  carrito,
+  productos,
+  cambiarCantidad,
+  eliminarDelCarrito,
+  vaciarCarrito,
+  descontarStock,
+  totalPedido,
+  usuarioActual = null,
+  registrarOrden,
+}) {
   const navigate = useNavigate();
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const [datosEnvio, setDatosEnvio] = useState({
-    nombre: '',
-    direccion: '',
+    nombre: usuarioActual?.nombre || '',
+    direccion: usuarioActual?.direccion || '',
     comuna: 'Puente Alto',
-    telefono: '',
-    metodoPago: 'efectivo'
+    telefono: usuarioActual?.telefono || '',
+    metodoPago: 'efectivo',
   });
 
   const [errores, setErrores] = useState({});
 
   const { subtotal, costoEnvio, total } = calcularTotal(carrito);
+
+  const abrirModalPago = () => {
+    if (usuarioActual) {
+      setDatosEnvio((prev) => ({
+        ...prev,
+        nombre: prev.nombre || usuarioActual.nombre || '',
+        direccion: prev.direccion || usuarioActual.direccion || '',
+        telefono: prev.telefono || usuarioActual.telefono || '',
+      }));
+    }
+    setMostrarModal(true);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -37,9 +59,21 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
 
     if (!formularioValido(nuevosErrores)) return;
 
+    const nuevaOrden = registrarOrden?.({
+      cliente: datosEnvio,
+      items: carrito,
+      total: totalPedido ?? total,
+    });
+
     descontarStock();
     vaciarCarrito();
-    navigate('/pago-exitoso', { state: { cliente: datosEnvio, total: totalPedido } });
+    navigate('/pago-exitoso', {
+      state: {
+        cliente: datosEnvio,
+        total: totalPedido ?? total,
+        nroOrden: nuevaOrden?.numero,
+      },
+    });
   };
 
   if (carrito.length === 0) {
@@ -65,7 +99,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
             return (
               <article className="item-carrito" key={item.id}>
                 <img src={obtenerRutaImagen(item)} alt={item.nombre} onError={usarImagenPorDefecto} />
-                
+
                 <div className="detalles-item">
                   <h3>{item.nombre}</h3>
                   <span className="precio-unitario">
@@ -93,8 +127,8 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                   {formatearPrecio(item.precio * item.cantidad)}
                 </div>
 
-                <button 
-                  className="btn-eliminar" 
+                <button
+                  className="btn-eliminar"
                   onClick={() => eliminarDelCarrito(item.id)}
                 >
                   ✕
@@ -106,7 +140,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
 
         <aside className="resumen-compra">
           <h2>Resumen del Pedido</h2>
-          
+
           <div className="fila-resumen">
             <span>Subtotal:</span>
             <span>{formatearPrecio(subtotal)}</span>
@@ -122,7 +156,7 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
             <span>{formatearPrecio(total)}</span>
           </div>
 
-          <button className="boton btn-pagar" onClick={() => setMostrarModal(true)}>
+          <button className="boton btn-pagar" onClick={abrirModalPago}>
             Ir a Pagar
           </button>
         </aside>
@@ -133,7 +167,9 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
           <div className="contenido-modal">
             <div className="cabecera-modal">
               <h2>Confirmación de Despacho</h2>
-              <span className="badge-seguro">Pedido de demostración</span>
+              <span className="badge-seguro">
+                {usuarioActual ? `Cliente: ${usuarioActual.nombre}` : 'Pedido de demostración'}
+              </span>
             </div>
 
             <form id="form-pasarela" onSubmit={handleFinalizarCompra} noValidate>
@@ -141,21 +177,21 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                 <legend>Datos de Entrega</legend>
 
                 <label>Nombre Completo:</label>
-                <input 
-                  type="text" 
-                  name="nombre" 
-                  value={datosEnvio.nombre} 
-                  onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="nombre"
+                  value={datosEnvio.nombre}
+                  onChange={handleInputChange}
                   placeholder="Ej: Juan Pérez"
                 />
                 {errores.nombre && <small style={{ color: '#e53e3e' }}>{errores.nombre}</small>}
 
                 <label>Dirección y Número:</label>
-                <input 
-                  type="text" 
-                  name="direccion" 
-                  value={datosEnvio.direccion} 
-                  onChange={handleInputChange} 
+                <input
+                  type="text"
+                  name="direccion"
+                  value={datosEnvio.direccion}
+                  onChange={handleInputChange}
                   placeholder="Ej: Av. Concha y Toro 1234"
                 />
                 {errores.direccion && <small style={{ color: '#e53e3e' }}>{errores.direccion}</small>}
@@ -163,20 +199,20 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
                 <div className="fila-doble">
                   <div>
                     <label>Comuna:</label>
-                    <input 
-                      type="text" 
-                      name="comuna" 
-                      value={datosEnvio.comuna} 
-                      onChange={handleInputChange} 
+                    <input
+                      type="text"
+                      name="comuna"
+                      value={datosEnvio.comuna}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div>
                     <label>Teléfono Contacto:</label>
-                    <input 
-                      type="tel" 
-                      name="telefono" 
-                      value={datosEnvio.telefono} 
-                      onChange={handleInputChange} 
+                    <input
+                      type="tel"
+                      name="telefono"
+                      value={datosEnvio.telefono}
+                      onChange={handleInputChange}
                       placeholder="Ej: 912345678"
                     />
                     {errores.telefono && <small style={{ color: '#e53e3e' }}>{errores.telefono}</small>}
@@ -187,21 +223,21 @@ function Carrito({ carrito, productos, cambiarCantidad, eliminarDelCarrito, vaci
               <fieldset className="seccion-form">
                 <legend>Método de Pago</legend>
                 <label>
-                  <input 
-                    type="radio" 
-                    name="metodoPago" 
-                    value="efectivo" 
-                    checked={datosEnvio.metodoPago === 'efectivo'} 
+                  <input
+                    type="radio"
+                    name="metodoPago"
+                    value="efectivo"
+                    checked={datosEnvio.metodoPago === 'efectivo'}
                     onChange={handleInputChange}
                   /> Efectivo al repartidor
                 </label>
                 <br />
                 <label>
-                  <input 
-                    type="radio" 
-                    name="metodoPago" 
-                    value="transbank" 
-                    checked={datosEnvio.metodoPago === 'transbank'} 
+                  <input
+                    type="radio"
+                    name="metodoPago"
+                    value="transbank"
+                    checked={datosEnvio.metodoPago === 'transbank'}
                     onChange={handleInputChange}
                   /> Tarjeta Débito/Crédito (POS)
                 </label>

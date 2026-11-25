@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { formatearPrecio } from '../utils/precio';
 import {
   describirStock,
@@ -15,15 +16,21 @@ function TarjetaProducto({ producto, onAgregar }) {
         <span className="etiqueta-oferta">🔥 {textoOferta(producto)}</span>
       )}
 
-      <div className="tarjeta-imagen">
-        <img
-          src={obtenerRutaImagen(producto)}
-          alt={producto.nombre}
-          onError={usarImagenPorDefecto}
-        />
-      </div>
+      <Link
+        to={`/producto/${producto.id}`}
+        style={{ textDecoration: 'none', color: 'inherit' }}
+      >
+        <div className="tarjeta-imagen">
+          <img
+            src={obtenerRutaImagen(producto)}
+            alt={producto.nombre}
+            onError={usarImagenPorDefecto}
+          />
+        </div>
 
-      <h3>{producto.nombre}</h3>
+        <h3>{producto.nombre}</h3>
+      </Link>
+
       <p className="tarjeta-descripcion">{producto.descripcion}</p>
 
       <p className={hayStock ? 'stock-disponible' : 'stock-agotado'}>

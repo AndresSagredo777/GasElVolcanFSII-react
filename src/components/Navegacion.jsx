@@ -1,9 +1,8 @@
-// src/components/Navegacion.jsx
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { obtenerRolUsuario } from '../utils/usuarios';
 
 function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
-  // Estado para controlar el menú hamburguesa en celulares
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const toggleMenu = () => {
@@ -14,16 +13,17 @@ function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
     setMenuAbierto(false);
   };
 
+  const rol = obtenerRolUsuario(usuarioActual);
+  const puedeGestionar = usuarioActual && (rol === 'admin' || rol === 'vendedor');
+
   return (
     <header className="cabecera">
-      {/* Marca / Logo con redirección SPA */}
       <Link className="marca" to="/" onClick={cerrarMenu}>
         Gas El Volcan
       </Link>
 
-      {/* Botón menú hamburguesa para versión móvil */}
       <button
-        className={`boton-menu ${menuAbierto ? 'activo' : ''}`} 
+        className={`boton-menu ${menuAbierto ? 'activo' : ''}`}
         onClick={toggleMenu}
         aria-label="Abrir o cerrar navegación"
         aria-expanded={menuAbierto}
@@ -35,7 +35,6 @@ function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
         <span className="linea-menu"></span>
       </button>
 
-      {/* Lista de navegación */}
       <nav>
         <ul id="menu-principal" className={`menu ${menuAbierto ? 'menu-abierto' : ''}`}>
           <li>
@@ -62,9 +61,33 @@ function Navegacion({ cantidadTotal = 0, usuarioActual = null, cerrarSesion }) {
           <li><NavLink to="/blog" onClick={cerrarMenu}>Blog</NavLink></li>
           <li><NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink></li>
           <li><NavLink to="/carrito" onClick={cerrarMenu}>🛒 Carrito ({cantidadTotal})</NavLink></li>
+
+          {puedeGestionar && (
+            <li>
+              <NavLink to="/admin" onClick={cerrarMenu}>
+                {rol === 'admin' ? '⚙️ Admin' : '📋 Gestión'}
+              </NavLink>
+            </li>
+          )}
+
+          {usuarioActual && (
+            <li>
+              <NavLink to="/perfil" onClick={cerrarMenu}>
+                Mi Perfil
+              </NavLink>
+            </li>
+          )}
+
           <li>
             {usuarioActual ? (
-              <button className="enlace-menu" type="button" onClick={() => { cerrarSesion?.(); cerrarMenu(); }}>
+              <button
+                className="enlace-menu"
+                type="button"
+                onClick={() => {
+                  cerrarSesion?.();
+                  cerrarMenu();
+                }}
+              >
                 👤 {usuarioActual.nombre || usuarioActual.email || 'Usuario'} · Salir
               </button>
             ) : (
