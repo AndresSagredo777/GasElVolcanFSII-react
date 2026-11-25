@@ -30,10 +30,10 @@ function AdminOrdenes({ ordenes = [] }) {
           <tbody>
             {ordenes.map((orden) => (
               <tr key={orden.id} style={{ borderBottom: '1px solid #edf2f7' }}>
-                <td style={{ padding: '0.8rem', fontWeight: 'bold', color: 'var(--color-secundario)' }}>{orden.numero}</td>
-                <td style={{ padding: '0.8rem' }}>{orden.fecha}</td>
-                <td style={{ padding: '0.8rem' }}>{orden.cliente?.nombre}</td>
-                <td style={{ padding: '0.8rem' }}>{orden.cliente?.comuna}</td>
+                <td style={{ padding: '0.8rem', fontWeight: 'bold', color: 'var(--color-secundario)' }}>{orden.numero || orden.id}</td>
+                <td style={{ padding: '0.8rem' }}>{orden.fecha || new Date(orden.creadoEn).toLocaleString('es-CL')}</td>
+                <td style={{ padding: '0.8rem' }}>{orden.nombreDestinatario || orden.cliente?.nombre}</td>
+                <td style={{ padding: '0.8rem' }}>{orden.cliente?.comuna || orden.direccion || '—'}</td>
                 <td style={{ padding: '0.8rem', fontWeight: 'bold' }}>{formatearPrecio(orden.total)}</td>
                 <td style={{ padding: '0.8rem' }}>
                   <span className="badge-estado">{orden.estado}</span>
@@ -57,16 +57,16 @@ function AdminOrdenes({ ordenes = [] }) {
         <div className="modal-pago">
           <div className="contenido-modal" style={{ maxWidth: '560px' }}>
             <div className="cabecera-modal">
-              <h2>Detalle de Boleta {ordenSeleccionada.numero}</h2>
+              <h2>Detalle de Pedido {ordenSeleccionada.numero || ordenSeleccionada.id}</h2>
               <button type="button" className="btn-eliminar" onClick={() => setOrdenSeleccionada(null)}>✕</button>
             </div>
 
             <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              <p style={{ margin: '0.25rem 0' }}><strong>Fecha:</strong> {ordenSeleccionada.fecha}</p>
-              <p style={{ margin: '0.25rem 0' }}><strong>Cliente:</strong> {ordenSeleccionada.cliente?.nombre}</p>
-              <p style={{ margin: '0.25rem 0' }}><strong>Dirección:</strong> {ordenSeleccionada.cliente?.direccion}, {ordenSeleccionada.cliente?.comuna}</p>
-              <p style={{ margin: '0.25rem 0' }}><strong>Teléfono:</strong> {ordenSeleccionada.cliente?.telefono}</p>
-              <p style={{ margin: '0.25rem 0' }}><strong>Método de Pago:</strong> {ordenSeleccionada.cliente?.metodoPago === 'transbank' ? 'Tarjeta Débito/Crédito (POS)' : 'Efectivo al repartidor'}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Fecha:</strong> {ordenSeleccionada.fecha || new Date(ordenSeleccionada.creadoEn).toLocaleString('es-CL')}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Cliente:</strong> {ordenSeleccionada.nombreDestinatario || ordenSeleccionada.cliente?.nombre}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Dirección:</strong> {ordenSeleccionada.direccion || [ordenSeleccionada.cliente?.direccion, ordenSeleccionada.cliente?.comuna].filter(Boolean).join(', ')}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Teléfono:</strong> {ordenSeleccionada.telefono || ordenSeleccionada.cliente?.telefono}</p>
+              <p style={{ margin: '0.25rem 0' }}><strong>Pago:</strong> No procesado por la aplicación</p>
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem', marginBottom: '1rem' }}>
@@ -79,19 +79,19 @@ function AdminOrdenes({ ordenes = [] }) {
                 </tr>
               </thead>
               <tbody>
-                {ordenSeleccionada.items?.map((item, idx) => (
+                {(ordenSeleccionada.productos || ordenSeleccionada.items || []).map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid #edf2f7' }}>
-                    <td style={{ padding: '0.5rem' }}>{item.nombre}</td>
+                    <td style={{ padding: '0.5rem' }}>{item.nombre || item.nombreProducto}</td>
                     <td style={{ padding: '0.5rem' }}>{item.cantidad}</td>
-                    <td style={{ padding: '0.5rem' }}>{formatearPrecio(item.precio)}</td>
-                    <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>{formatearPrecio(item.precio * item.cantidad)}</td>
+                    <td style={{ padding: '0.5rem' }}>{formatearPrecio(item.precioUnitario ?? item.precio)}</td>
+                    <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>{formatearPrecio(item.subtotal ?? (item.precioUnitario ?? item.precio) * item.cantidad)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #e2e8f0', paddingTop: '0.8rem' }}>
-              <strong>Total Pagado (incluye despacho):</strong>
+              <strong>Total de productos:</strong>
               <span style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--color-primario)' }}>
                 {formatearPrecio(ordenSeleccionada.total)}
               </span>

@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import {
-  borrarProducto,
   contarCategorias,
-  crearProducto,
-  editarProducto,
   normalizarProducto,
   obtenerRutaImagen,
   obtenerStockCritico,
@@ -14,6 +11,7 @@ import { obtenerRolUsuario } from '../utils/usuarios';
 import AdminOrdenes from '../components/admin/AdminOrdenes';
 import AdminCategorias from '../components/admin/AdminCategorias';
 import AdminReportes from '../components/admin/AdminReportes';
+import { eliminarProductoAPI, guardarProductoAPI } from '../services/catalogoApi';
 
 function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], usuarioActual = null }) {
   const rol = obtenerRolUsuario(usuarioActual);
@@ -24,17 +22,22 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [productoDetalle, setProductoDetalle] = useState(null);
   const [categoriasExtra, setCategoriasExtra] = useState([]);
+  const [guardandoProducto, setGuardandoProducto] = useState(false);
+  const [errorProducto, setErrorProducto] = useState('');
 
   const categoriasDisponibles = [
     ...new Set([...productos.map((p) => p.categoria), ...categoriasExtra]),
   ];
 
   const [formProducto, setFormProducto] = useState({
+    codigo: '',
     nombre: '',
     categoria: 'Cilindros de Gas',
     precio: '',
     stock: '',
     oferta: false,
+    precioAnterior: '',
+    descuento: '',
     imagen: 'assets/cilindro11kg.png',
     descripcion: '',
   });
@@ -53,11 +56,14 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
   const handleNuevo = () => {
     setModoEdicion(null);
     setFormProducto({
+      codigo: '',
       nombre: '',
       categoria: categoriasDisponibles[0] || 'Cilindros de Gas',
       precio: '',
       stock: '',
       oferta: false,
+      precioAnterior: '',
+      descuento: '',
       imagen: 'assets/cilindro11kg.png',
       descripcion: '',
     });
@@ -67,33 +73,60 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
   const handleEditar = (prod) => {
     setModoEdicion(prod.id);
     setFormProducto({
+      codigo: prod.codigo || '',
       nombre: prod.nombre,
       categoria: prod.categoria,
       precio: prod.precio,
       stock: prod.stock,
       oferta: prod.oferta || false,
+      precioAnterior: prod.precioAnterior ?? '',
+      descuento: prod.descuento ?? '',
       imagen: prod.imagen || 'assets/cilindro11kg.png',
       descripcion: prod.descripcion || '',
     });
     setMostrarModal(true);
   };
 
-  const handleEliminar = (id) => {
+  const handleEliminar = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este producto del inventario?')) {
-      setProductos((actuales) => borrarProducto(actuales, id));
+      try {
+        await eliminarProductoAPI(id);
+        setProductos((actuales) => actuales.filter((producto) => producto.id !== Number(id)));
+      } catch (error) {
+        window.alert(`No se pudo eliminar el producto: ${error.message}`);
+      }
     }
   };
 
-  const handleGuardar = (e) => {
+  const handleGuardar = async (e) => {
     e.preventDefault();
-    const datosNormalizados = normalizarProducto(formProducto);
-
-    const nuevaLista = modoEdicion
-      ? editarProducto(productos, modoEdicion, datosNormalizados)
-      : crearProducto(productos, datosNormalizados);
-
-    setProductos(nuevaLista);
-    setMostrarModal(false);
+    setGuardandoProducto(true);
+    setErrorProducto('');
+    try {
+      const datosNormalizados = normalizarProducto(formProducto);
+      const precioAnterior = formProducto.oferta ? Math.floor(Number(formProducto.precioAnterior)) : null;
+      const descuento = formProducto.oferta ? Math.floor(Number(formProducto.descuento)) : null;
+      const producto = await guardarProductoAPI({
+        codigo: formProducto.codigo.trim() || null,
+        nombre: formProducto.nombre.trim(),
+        categoria: formProducto.categoria.trim(),
+        precio: datosNormalizados.precio,
+        precioAnterior,
+        descuento,
+        stock: datosNormalizados.stock,
+        oferta: Boolean(formProducto.oferta),
+        imagen: formProducto.imagen.trim(),
+        descripcion: formProducto.descripcion.trim() || null,
+      }, modoEdicion);
+      setProductos((actuales) => modoEdicion
+        ? actuales.map((item) => item.id === Number(modoEdicion) ? producto : item)
+        : [...actuales, producto]);
+      setMostrarModal(false);
+    } catch (error) {
+      setErrorProducto(error.message || 'No se pudo guardar el producto.');
+    } finally {
+      setGuardandoProducto(false);
+    }
   };
 
   return (
@@ -372,6 +405,17 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
 
             <form onSubmit={handleGuardar} className="form-login">
               <div className="grupo-campo">
+                <label>Código (opcional)</label>
+                <input
+                  type="text"
+                  maxLength="20"
+                  value={formProducto.codigo}
+                  onChange={(e) => setFormProducto({ ...formProducto, codigo: e.target.value })}
+                  placeholder="ej. CL001"
+                />
+              </div>
+
+              <div className="grupo-campo">
                 <label>Nombre del Producto</label>
                 <input
                   type="text"
@@ -403,7 +447,14 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
                     required
                     min="0"
                     value={formProducto.precio}
-                    onChange={(e) => setFormProducto({ ...formProducto, precio: e.target.value })}
+                    onChange={(e) => {
+                      const precio = e.target.value;
+                      const precioAnterior = Number(formProducto.precioAnterior);
+                      const descuento = formProducto.oferta && precioAnterior > Number(precio)
+                        ? Math.round((precioAnterior - Number(precio)) * 100 / precioAnterior)
+                        : formProducto.oferta ? '' : formProducto.descuento;
+                      setFormProducto({ ...formProducto, precio, descuento });
+                    }}
                     placeholder="22900"
                   />
                 </div>
@@ -457,12 +508,41 @@ function AdminDashboard({ productos, setProductos, usuarios = [], ordenes = [], 
                 </label>
               </div>
 
+              {formProducto.oferta && (
+                <div className="fila-doble-login">
+                  <div className="grupo-campo">
+                    <label>Precio anterior ($)</label>
+                    <input
+                      type="number"
+                      required
+                      min={Number(formProducto.precio || 0) + 1}
+                      value={formProducto.precioAnterior}
+                      onChange={(e) => {
+                        const precioAnterior = e.target.value;
+                        const precio = Number(formProducto.precio);
+                        const descuento = precioAnterior && Number(precioAnterior) > precio
+                          ? Math.round((Number(precioAnterior) - precio) * 100 / Number(precioAnterior))
+                          : '';
+                        setFormProducto({ ...formProducto, precioAnterior, descuento });
+                      }}
+                      placeholder="Precio antes de la oferta"
+                    />
+                  </div>
+                  <div className="grupo-campo">
+                    <label>Descuento (%)</label>
+                    <input type="number" readOnly value={formProducto.descuento} />
+                  </div>
+                </div>
+              )}
+
+              {errorProducto && <p role="alert" style={{ color: '#b91c1c' }}>{errorProducto}</p>}
+
               <div className="acciones-modal">
                 <button type="button" className="btn-cancelar" onClick={() => setMostrarModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="boton">
-                  {modoEdicion ? 'Guardar Cambios' : 'Crear Producto'}
+                <button type="submit" className="boton" disabled={guardandoProducto}>
+                  {guardandoProducto ? 'Guardando…' : modoEdicion ? 'Guardar Cambios' : 'Crear Producto'}
                 </button>
               </div>
             </form>
