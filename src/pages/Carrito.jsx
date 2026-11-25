@@ -11,13 +11,13 @@ function Carrito({
   cambiarCantidad,
   eliminarDelCarrito,
   vaciarCarrito,
-  descontarStock,
-  totalPedido,
   usuarioActual = null,
-  registrarOrden,
+  crearPedido,
 }) {
   const navigate = useNavigate();
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [errorPedido, setErrorPedido] = useState('');
+  const [enviandoPedido, setEnviandoPedido] = useState(false);
 
   const [datosEnvio, setDatosEnvio] = useState({
     nombre: usuarioActual?.nombre || '',
@@ -29,7 +29,8 @@ function Carrito({
 
   const [errores, setErrores] = useState({});
 
-  const { subtotal, costoEnvio, total } = calcularTotal(carrito);
+  const { subtotal } = calcularTotal(carrito);
+  const total = subtotal;
 
   const abrirModalPago = () => {
     if (usuarioActual) {
@@ -51,29 +52,37 @@ function Carrito({
     }
   };
 
-  const handleFinalizarCompra = (e) => {
+  const handleFinalizarCompra = async (e) => {
     e.preventDefault();
+    setErrorPedido('');
+
+    if (!usuarioActual) {
+      navigate('/login');
+      return;
+    }
 
     const nuevosErrores = validarEnvio(datosEnvio);
     setErrores(nuevosErrores);
-
     if (!formularioValido(nuevosErrores)) return;
 
-    const nuevaOrden = registrarOrden?.({
-      cliente: datosEnvio,
-      items: carrito,
-      total: totalPedido ?? total,
-    });
-
-    descontarStock();
-    vaciarCarrito();
-    navigate('/pago-exitoso', {
-      state: {
-        cliente: datosEnvio,
-        total: totalPedido ?? total,
-        nroOrden: nuevaOrden?.numero,
-      },
-    });
+    setEnviandoPedido(true);
+    try {
+      const pedido = await crearPedido({
+        nombreDestinatario: datosEnvio.nombre.trim(),
+        telefono: datosEnvio.telefono.trim(),
+        direccion: [datosEnvio.direccion.trim(), datosEnvio.comuna.trim()].filter(Boolean).join(', '),
+        productos: carrito.map((item) => ({
+          productoId: Number(item.id),
+          cantidad: Number(item.cantidad),
+        })),
+      });
+      vaciarCarrito();
+      navigate('/pago-exitoso', { state: { pedido } });
+    } catch (error) {
+      setErrorPedido(error.message || 'No se pudo registrar el pedido.');
+    } finally {
+      setEnviandoPedido(false);
+    }
   };
 
   if (carrito.length === 0) {
@@ -146,12 +155,8 @@ function Carrito({
             <span>{formatearPrecio(subtotal)}</span>
           </div>
 
-          <div className="fila-resumen">
-            <span>Despacho:</span>
-            <span>{formatearPrecio(costoEnvio)}</span>
-          </div>
-
-          <div className="fila-resumen total">
+          <p style={{ fontSize: '0.88rem', color: '#64748b' }}>El total corresponde a los productos; el despacho y el pago no se procesan en esta aplicación.</p>
+<div className="fila-resumen total">
             <span>Total:</span>
             <span>{formatearPrecio(total)}</span>
           </div>
@@ -168,7 +173,7 @@ function Carrito({
             <div className="cabecera-modal">
               <h2>Confirmación de Despacho</h2>
               <span className="badge-seguro">
-                {usuarioActual ? `Cliente: ${usuarioActual.nombre}` : 'Pedido de demostración'}
+                {usuarioActual ? `Cliente: ${usuarioActual.nombre}` : 'Inicia sesión para pedir'}
               </span>
             </div>
 
@@ -221,34 +226,19 @@ function Carrito({
               </fieldset>
 
               <fieldset className="seccion-form">
-                <legend>Método de Pago</legend>
-                <label>
-                  <input
-                    type="radio"
-                    name="metodoPago"
-                    value="efectivo"
-                    checked={datosEnvio.metodoPago === 'efectivo'}
-                    onChange={handleInputChange}
-                  /> Efectivo al repartidor
-                </label>
-                <br />
-                <label>
-                  <input
-                    type="radio"
-                    name="metodoPago"
-                    value="transbank"
-                    checked={datosEnvio.metodoPago === 'transbank'}
-                    onChange={handleInputChange}
-                  /> Tarjeta Débito/Crédito (POS)
-                </label>
+                <legend>Pago</legend>
+                <p style={{ margin: 0, color: '#64748b' }}>
+                  Este paso registra el pedido. El pago se coordina fuera de la aplicación.
+                </p>
               </fieldset>
 
+              {errorPedido && <p role="alert" className="alerta-error">{errorPedido}</p>}
               <div className="acciones-modal">
                 <button type="button" className="btn-cancelar" onClick={() => setMostrarModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="boton">
-                  Confirmar Pedido ({formatearPrecio(total)})
+                <button type="submit" className="boton" disabled={enviandoPedido}>
+                  {enviandoPedido ? 'Enviando pedido...' : 'Confirmar pedido (' + formatearPrecio(total) + ')'}
                 </button>
               </div>
             </form>

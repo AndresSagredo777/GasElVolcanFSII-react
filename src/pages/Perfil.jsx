@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { formatearPrecio } from '../utils/precio';
 import { obtenerRolUsuario } from '../utils/usuarios';
 
-function Perfil({ usuarioActual = null, ordenes = [], cerrarSesion }) {
+function Perfil({ usuarioActual = null, ordenes = [], errorPedidos = '', cerrarSesion }) {
   if (!usuarioActual) {
     return (
       <main className="contenedor-principal text-center py-5">
@@ -22,10 +22,7 @@ function Perfil({ usuarioActual = null, ordenes = [], cerrarSesion }) {
     cliente: 'Cliente',
   };
 
-  const misOrdenes = ordenes.filter(
-    (orden) =>
-      orden.cliente?.nombre?.toLowerCase() === usuarioActual.nombre?.toLowerCase()
-  );
+  const misOrdenes = ordenes;
 
   return (
     <main className="contenedor-principal">
@@ -50,6 +47,8 @@ function Perfil({ usuarioActual = null, ordenes = [], cerrarSesion }) {
           Historial de Pedidos ({misOrdenes.length})
         </h2>
 
+        {errorPedidos && <p role="alert" className="alerta-error">{errorPedidos}</p>}
+
         {misOrdenes.length === 0 ? (
           <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>
             Aún no registras pedidos asociados a tu cuenta.
@@ -69,9 +68,9 @@ function Perfil({ usuarioActual = null, ordenes = [], cerrarSesion }) {
                 }}
               >
                 <div>
-                  <strong>Orden {orden.numero}</strong>
+                  <strong>Pedido #{orden.id}</strong>
                   <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    {orden.fecha} · {orden.items.length} producto(s)
+                    {new Date(orden.creadoEn).toLocaleString('es-CL')} · {orden.productos?.length || 0} producto(s)
                   </div>
                 </div>
                 <strong style={{ color: 'var(--color-primario)' }}>

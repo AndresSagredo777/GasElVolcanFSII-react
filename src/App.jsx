@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import { iniciarSesionAPI, registrarUsuarioAPI } from './services/authApi';
+import { crearPedidoAPI, listarMisPedidosAPI, listarProductosAPI, listarTodosPedidosAPI } from './services/catalogoApi';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { productos as productosIniciales } from './data/productos';
 import Navegacion from './components/Navegacion';
 import Footer from './components/Footer';
 import PagPrincipal from './pages/PagPrincipal';
@@ -22,29 +23,23 @@ import Perfil from './pages/Perfil';
 import NotFound404 from './pages/NotFound404';
 import { claves, leerDatos, guardarDatos, eliminarDatos } from './utils/persistencia';
 import { obtenerStock } from './utils/funcionesProductos';
-import { crearOrden } from './utils/ordenes';
 import {
   agregarProducto,
   actualizarCantidad,
   calcularCantidadTotal,
   calcularTotal,
-  descontarStock as restarStock,
   eliminarProducto,
   validarAgregar,
 } from './utils/carrito';
-import {
-  buscarUsuario,
-  obtenerRolUsuario,
-  registrarNuevoUsuario,
-  usuariosDemo,
-} from './utils/usuarios';
+import { obtenerRolUsuario, usuariosDemo } from './utils/usuarios';
 
 function App() {
-  const [productos, setProductos] = useState(() =>
-    leerDatos(claves.productos, productosIniciales)
-  );
+  const [productos, setProductos] = useState([]);
+  const [cargandoProductos, setCargandoProductos] = useState(true);
+  const [errorProductos, setErrorProductos] = useState('');
   const [carrito, setCarrito] = useState(() => leerDatos(claves.carrito, []));
-  const [ordenes, setOrdenes] = useState(() => leerDatos(claves.ordenes, []));
+  const [ordenes, setOrdenes] = useState([]);
+  const [errorPedidos, setErrorPedidos] = useState('');
   const [usuarios, setUsuarios] = useState(() => {
     const guardados = leerDatos(claves.usuarios, []);
     const extras = guardados.filter(
@@ -53,22 +48,61 @@ function App() {
     return [...usuariosDemo, ...extras];
   });
   const [usuarioActual, setUsuarioActual] = useState(() =>
-    leerDatos(claves.usuarioActual, null)
+    sessionStorage.getItem('token') ? leerDatos(claves.usuarioActual, null) : null
   );
 
   useEffect(() => {
-    guardarDatos(claves.productos, productos);
-  }, [productos]);
+    let activo = true;
+    listarProductosAPI()
+      .then((datos) => {
+        if (!activo) return;
+        setProductos(datos);
+        setCarrito((actual) => actual.flatMap((item) => {
+          const producto = datos.find((p) => p.id === item.id);
+          if (!producto || producto.stock < 1) return [];
+          return [{ ...producto, cantidad: Math.min(item.cantidad, producto.stock) }];
+        }));
+        setErrorProductos('');
+      })
+      .catch((error) => {
+        if (activo) setErrorProductos(error.message);
+      })
+      .finally(() => {
+        if (activo) setCargandoProductos(false);
+      });
+    return () => { activo = false; };
+  }, []);
 
   useEffect(() => {
+    if (!usuarioActual || !sessionStorage.getItem('token')) {
+      setOrdenes([]);
+      setErrorPedidos('');
+      return undefined;
+    }
+
+    let activo = true;
+    const consulta = usuarioActual.rol === 'admin'
+      ? listarTodosPedidosAPI()
+      : listarMisPedidosAPI();
+    consulta
+      .then((datos) => {
+        if (activo) {
+          setOrdenes(datos);
+          setErrorPedidos('');
+        }
+      })
+      .catch((error) => {
+        if (activo) setErrorPedidos(error.message);
+      });
+    return () => { activo = false; };
+  }, [usuarioActual]);
+
+
+useEffect(() => {
     guardarDatos(claves.carrito, carrito);
   }, [carrito]);
 
-  useEffect(() => {
-    guardarDatos(claves.ordenes, ordenes);
-  }, [ordenes]);
-
-  useEffect(() => {
+useEffect(() => {
     const usuariosPublicos = usuarios.map((usuario) => {
       const datosPublicos = { ...usuario };
       delete datosPublicos.password;
@@ -87,33 +121,53 @@ function App() {
     }
   }, [usuarioActual]);
 
-  function registrarUsuario(nuevoUsuario) {
-    const usuarioConRol = { ...nuevoUsuario, rol: 'cliente' };
-    const resultado = registrarNuevoUsuario(usuarios, usuarioConRol);
-    if (resultado.exito) {
-      setUsuarios(resultado.usuarios);
-      setUsuarioActual(usuarioConRol);
-    }
-    return resultado;
-  }
-
-  function iniciarSesion(email, password) {
-    const usuario = buscarUsuario(usuarios, email, password);
-    if (!usuario) {
-      return { exito: false, mensaje: 'Correo o contraseña incorrectos.' };
-    }
+  async function guardarSesion(datos) {
+    sessionStorage.setItem('token', datos.token);
+    const usuario = {
+      nombre: datos.nombre,
+      email: datos.correo,
+      rol: datos.rol.toLowerCase(),
+    };
     setUsuarioActual(usuario);
     return { exito: true };
   }
 
+  async function registrarUsuario(nuevoUsuario) {
+    try {
+      const datos = await registrarUsuarioAPI(nuevoUsuario);
+      return await guardarSesion(datos);
+    } catch (error) {
+      return { exito: false, mensaje: error.message };
+    }
+  }
+
+  async function iniciarSesion(email, password) {
+    try {
+      const datos = await iniciarSesionAPI(email, password);
+      return await guardarSesion(datos);
+    } catch (error) {
+      return { exito: false, mensaje: error.message };
+    }
+  }
+
   function cerrarSesion() {
+    sessionStorage.removeItem('token');
     setUsuarioActual(null);
   }
 
-  function registrarOrden(datosOrden) {
-    const nuevaOrden = crearOrden(datosOrden);
-    setOrdenes((actuales) => [nuevaOrden, ...actuales]);
-    return nuevaOrden;
+  async function procesarPedido(datosPedido) {
+    const pedido = await crearPedidoAPI(datosPedido);
+    setOrdenes((actuales) => [pedido, ...actuales.filter((item) => item.id !== pedido.id)]);
+    setErrorPedidos('');
+
+    try {
+      const datos = await listarProductosAPI();
+      setProductos(datos);
+      setErrorProductos('');
+    } catch (error) {
+      setErrorProductos(error.message);
+    }
+    return pedido;
   }
 
   function agregarAlCarrito(producto) {
@@ -137,12 +191,6 @@ function App() {
   function vaciarCarrito() {
     setCarrito([]);
   }
-
-  function descontarStock() {
-    setProductos((actuales) => restarStock(actuales, carrito));
-  }
-
-  const { total: totalPedido } = calcularTotal(carrito);
   const rolActual = obtenerRolUsuario(usuarioActual);
 
   return (
@@ -153,6 +201,8 @@ function App() {
         cerrarSesion={cerrarSesion}
       />
 
+      {cargandoProductos && <p role="status" style={{ textAlign: 'center' }}>Cargando catálogo...</p>}
+      {errorProductos && <p role="alert" style={{ textAlign: 'center', color: '#b91c1c' }}>No se pudo cargar el catálogo: {errorProductos}</p>}
       <Routes>
         <Route path="/" element={<PagPrincipal productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
         <Route path="/productos" element={<Cartelera productos={productos} agregarAlCarrito={agregarAlCarrito} />} />
@@ -179,6 +229,7 @@ function App() {
             <Perfil
               usuarioActual={usuarioActual}
               ordenes={ordenes}
+              errorPedidos={errorPedidos}
               cerrarSesion={cerrarSesion}
             />
           }
@@ -192,10 +243,8 @@ function App() {
               cambiarCantidad={cambiarCantidad}
               eliminarDelCarrito={eliminarDelCarrito}
               vaciarCarrito={vaciarCarrito}
-              descontarStock={descontarStock}
-              totalPedido={totalPedido}
               usuarioActual={usuarioActual}
-              registrarOrden={registrarOrden}
+              crearPedido={procesarPedido}
             />
           }
         />

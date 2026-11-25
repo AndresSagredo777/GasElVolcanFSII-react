@@ -42,7 +42,7 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
     setErrorGlobal('');
   };
 
-  const handleSubmitLogin = (e) => {
+  const handleSubmitLogin = async (e) => {
     e.preventDefault();
     
     const error = validarLogin(formLogin)
@@ -52,7 +52,7 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
       return;
     }
 
-    const resultado = iniciarSesion(formLogin.email, formLogin.password);
+    const resultado = await iniciarSesion(formLogin.email, formLogin.password);
     if (resultado.exito) {
       navigate('/carrito');
     } else {
@@ -60,7 +60,7 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
     }
   };
 
-  const handleSubmitRegistro = (e) => {
+  const handleSubmitRegistro = async (e) => {
     e.preventDefault();
 
     const error = validarRegistro(formRegistro);
@@ -70,7 +70,7 @@ function Login({ iniciarSesion, registrarUsuario, usuarioActual }) {
       return;
     }
 
-    const resultado = registrarUsuario(crearUsuario(formRegistro));
+    const resultado = await registrarUsuario(crearUsuario(formRegistro));
     if (resultado.exito) {
       navigate('/carrito');
     } else {
